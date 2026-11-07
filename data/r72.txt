@@ -1,0 +1,37 @@
+## OUT - Outcome matrix (positive / neutral / negative)
+
+**PRE-DRILLING ASSUMPTION-DRIVEN SCENARIO - NOT YET CALIBRATED WITH ON-SITE BOREHOLE OR AQUIFER-TEST DATA**
+
+The three readings of the ADMT classes are run side by side, each with an open and a closed boundary. No reading is adopted; the first borehole decides (M9).
+
+| reading   | boundary   |   storage_window_P50_m3 | pathway_range_all_sites_pct   |   S6_drawdown_P50_m | S6_drawdown_class   |   S5_drawdown_reduction_P50_m |   S5_recharge_retained_P50_pct |   plausible_vs_CGWB_pct |
+|:----------|:-----------|------------------------:|:------------------------------|--------------------:|:--------------------|------------------------------:|-------------------------------:|------------------------:|
+| Positive  | B1_GHB     |                   10805 | 97-100                        |                 1.5 | low (< 5 m)         |                           0.1 |                            0.5 |                      50 |
+| Positive  | B2_closed  |                   10805 | 97-100                        |                 2.9 | low (< 5 m)         |                           0.4 |                          100   |                       0 |
+| Neutral   | B1_GHB     |                    6296 | 20-34                         |                 1.7 | low (< 5 m)         |                           0.1 |                            0.6 |                      50 |
+| Neutral   | B2_closed  |                    6296 | 20-34                         |                 3.1 | low (< 5 m)         |                           0.4 |                          100   |                       0 |
+| Negative  | B1_GHB     |                    4806 | no permeable class            |                 5.2 | moderate (5-20 m)   |                           0.2 |                            0.6 |                      50 |
+| Negative  | B2_closed  |                    4806 | no permeable class            |                 4.7 | low (< 5 m)         |                           0.4 |                          100   |                       0 |
+
+### Positive reading (I-POS)
+- **What it means:** The low-response zones are open fractures. Storage in the 120-250 m window is the largest of the three readings (P50 10,805 m3) and a pathway from the upper zone reaches the well in 97-100 % of realisations across the candidate sites.
+- **What to do:** Drill the priority site (A) first; log fractures and water strikes between 100 and 300 m; keep the recharge package because the demand still draws the aquifer down: S6 drawdown P50 1.5 m with an open boundary (low (< 5 m)) and 2.9 m with a closed boundary (low (< 5 m)).
+- **Boundary:** Open boundary: drawdown P50 1.5 m, recharge retained 1 %. Closed boundary: drawdown P50 2.9 m, recharge retained 100 %. With a closed boundary the site lives on its own recharge, so the recharge package matters more.
+- **Borehole evidence that confirms it:** open fractures with water strikes in at least two of the predicted intervals (P2); yield step test holds
+
+### Neutral reading (I-NEU)
+- **What it means:** Only the strongest low-response class (C1) is fractured. Fractures are patchy: storage P50 6,296 m3 and a pathway from the upper zone in 20-34 % of realisations - a borewell may hit a fracture or miss it.
+- **What to do:** Drill to the logged fracture, not to a fixed depth; keep the reserve site ready; S6 drawdown P50 1.7 m with an open boundary (low (< 5 m)) and 3.1 m with a closed boundary (low (< 5 m)); recharge must be placed where the borehole proves a connected fracture.
+- **Boundary:** Open boundary: drawdown P50 1.7 m, recharge retained 1 %. Closed boundary: drawdown P50 3.1 m, recharge retained 100 %. With a closed boundary the site lives on its own recharge, so the recharge package matters more.
+- **Borehole evidence that confirms it:** one fractured interval near the predicted depth; other low-response intervals dry or tight
+
+### Negative reading (I-NEG)
+- **What it means:** No ADMT class carries water; C1 is clay/gouge. Storage is the smallest (P50 4,806 m3) and the site depends on weathered-zone water and on recharge.
+- **What to do:** Reduce the borewell demand, rely first on roof water, tanks and biopools; S6 drawdown P50 5.2 m with an open boundary (moderate (5-20 m)) and 4.7 m with a closed boundary (low (< 5 m)); a single borewell should be treated as a test well, not a supply.
+- **Boundary:** Open boundary: drawdown P50 5.2 m, recharge retained 1 %. Closed boundary: drawdown P50 4.7 m, recharge retained 100 %. With a closed boundary the site lives on its own recharge, so the recharge package matters more.
+- **Borehole evidence that confirms it:** low-response intervals logged as clay/gouge or tight rock; no strike in 100-300 m
+
+### Robust actions
+Actions that hold in all three readings: (1) build the roof-water capture and storage first; (2) drill the priority site as an exploratory borewell with full logging and a pumping test; (3) measure static water level and install a water-level logger; (4) decide the deep-recharge design only after the borehole shows which reading survives.
+
+Figure: F9-1_outcome_matrix.png
