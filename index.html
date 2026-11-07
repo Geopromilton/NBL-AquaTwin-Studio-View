@@ -1,0 +1,967 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="assets/icon.png">
+<title>NBL-AquaTwin Studio (view-only)</title>
+<script src="assets/replay.js"></script>
+<style>
+@font-face{font-family:"Plus Jakarta Sans";font-weight:400;src:url(assets/fonts/plus-jakarta-sans-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Plus Jakarta Sans";font-weight:500;src:url(assets/fonts/plus-jakarta-sans-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Plus Jakarta Sans";font-weight:600;src:url(assets/fonts/plus-jakarta-sans-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Plus Jakarta Sans";font-weight:700;src:url(assets/fonts/plus-jakarta-sans-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Plus Jakarta Sans";font-weight:800;src:url(assets/fonts/plus-jakarta-sans-latin-800-normal.woff2) format("woff2")}
+@font-face{font-family:"JetBrains Mono";font-weight:400;src:url(assets/fonts/jetbrains-mono-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"JetBrains Mono";font-weight:600;src:url(assets/fonts/jetbrains-mono-latin-600-normal.woff2) format("woff2")}
+#ssTab th,#ssTab td{padding:6px 3px;font-size:12.5px}#ssTab{width:100%}#ssTab input.reg-in{min-width:0;width:100%!important;max-width:52px;padding:5px 4px;box-sizing:border-box}#ssTab select{min-width:0}
+</style><style>
+/* Layout: fixed top bar with landscape art, dark teal pipeline sidebar, light working canvas, slide-in AI drawer.
+   Single light look by choice (matches the approved reference image). */
+:root{
+  --bg:#f2f6f5; --card:#ffffff; --ink:#122b2c; --muted:#5b7270; --line:#e0e9e7; --line2:#eef3f2;
+  --side1:#0f5459; --side2:#093a3f; --side-ink:#d9ecea; --side-mute:#8fb4b1; --side-act:#2a8f8a;
+  --green:#17663f; --green2:#1f8a54; --green-t:#e7f5ec; --blue:#2f7fe0; --blue-t:#eaf2fd;
+  --amber:#e9a321; --amber-t:#fff5e2; --red:#e0453c; --red-t:#fdecec; --violet:#8a5cd6;
+  --sky1:#d7ecf6; --sky2:#f4fafb;
+  --display:"Plus Jakarta Sans",system-ui,"Segoe UI",sans-serif; --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--display);font-size:14px;overflow:hidden}
+*{box-sizing:border-box}
+button{font-family:inherit;cursor:pointer}
+.num{font-variant-numeric:tabular-nums}
+/* ---------- top bar ---------- */
+.top{position:fixed;top:0;left:0;right:0;height:74px;z-index:20;display:flex;align-items:center;
+  padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px));
+  background:linear-gradient(180deg,var(--sky1),var(--sky2));border-bottom:1px solid var(--line);overflow:hidden}
+.top .art{position:absolute;right:0;top:0;height:100%;width:62%;pointer-events:none;opacity:.95}
+.brand{display:flex;align-items:center;gap:10px;min-width:226px;position:relative;z-index:2}
+.brand b{display:block;font-size:21px;font-weight:800;letter-spacing:-.3px;color:#123a3c}
+.brand span{font-size:12.5px;color:#2b5a57;font-weight:500}
+.tabs{display:flex;gap:6px;margin-left:120px;position:relative;z-index:2}
+.tab{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 18px;color:#28504e;font-size:12.5px;font-weight:600;border-radius:10px}
+.tab svg{width:20px;height:20px}
+.tab.on{color:#0b3a3d}
+.tab.on::after{content:"";display:block;width:26px;height:3px;border-radius:2px;background:var(--green2);margin-top:2px}
+.tab:hover{background:rgba(255,255,255,.55)}
+.topr{margin-left:auto;display:flex;gap:12px;align-items:center;position:relative;z-index:2}
+.sitesel{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-weight:600;box-shadow:0 2px 8px rgba(20,60,60,.06)}
+.refbtn{display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:#fff;color:#24504d;font:600 13.5px inherit;cursor:pointer;box-shadow:0 2px 8px rgba(20,60,60,.06)}
+.refbtn:hover{background:#f1f8f7}
+.refbtn svg{width:18px;height:18px}
+.refbtn.spin svg{animation:rfs .8s linear infinite}
+.refbtn.new{background:#e3f4e9;border-color:#2aa36b;color:#155e36;animation:rfp 1.6s ease-in-out infinite}
+@keyframes rfs{to{transform:rotate(360deg)}}
+@keyframes rfp{50%{box-shadow:0 0 0 5px rgba(42,163,107,.22)}}
+#aqToast{position:fixed;right:22px;bottom:22px;z-index:60;background:#14625f;color:#fff;border-radius:12px;padding:12px 18px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.22);max-width:420px;line-height:1.45}
+#aqToast[hidden]{display:none}
+.iconbtn{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:#fff;display:grid;place-items:center;color:#24504d}
+.avatar{width:40px;height:40px;border-radius:50%;background:#0f3f45;color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px}
+/* ---------- side ---------- */
+.side{position:fixed;top:74px;bottom:0;left:0;width:236px;z-index:10;background:linear-gradient(180deg,var(--side1),var(--side2));color:var(--side-ink);display:flex;flex-direction:column;overflow:hidden}
+.side nav{padding:18px 12px 0;overflow:auto;flex:1;position:relative;z-index:2}
+.grp{font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--side-mute);font-weight:700;margin:14px 10px 8px}
+.step{display:flex;align-items:center;gap:10px;width:100%;background:none;border:0;color:var(--side-ink);padding:9px 10px;border-radius:9px;text-align:left;font-size:13.5px;font-weight:500}
+.step:hover{background:rgba(255,255,255,.07)}
+.step.on{background:var(--side-act);color:#fff;font-weight:700;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.step .n{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;background:rgba(255,255,255,.12);flex:none}
+.step.done .n{background:#3fbf7f;color:#073b25}
+.step.review .n{background:#f1b84b;color:#4a3200}
+.step.lock{opacity:.55}
+.step .st{margin-left:auto;font-size:10.5px;color:var(--side-mute)}
+.side .scene{height:170px;flex:none;position:relative}
+.side .scene svg{position:absolute;bottom:0;left:0;width:100%;height:100%}
+/* ---------- main ---------- */
+main{position:fixed;top:74px;left:236px;right:0;bottom:0;overflow:auto;padding-block:26px 90px;padding-left:max(28px,env(safe-area-inset-left,0px));padding-right:max(28px,env(safe-area-inset-right,0px))}
+.page{display:none;max-width:1480px;margin:0 auto}
+.page.on{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.page.on{animation:none}}
+.ph{display:flex;gap:16px;align-items:flex-start;margin-bottom:20px}
+.ph .shield{width:46px;height:46px;border-radius:50%;background:#e3f0ee;display:grid;place-items:center;color:#0f5459;flex:none}
+.ph h1{margin:0;font-size:30px;font-weight:800;letter-spacing:-.6px;text-wrap:balance}
+.ph p{margin:6px 0 0;color:#3f5a58;max-width:880px;line-height:1.55}
+.ph .eyebrow{font-size:11.5px;font-weight:700;letter-spacing:1px;color:var(--green2);text-transform:uppercase}
+.badge{margin-left:auto;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;display:flex;gap:12px;align-items:center;min-width:220px;box-shadow:0 4px 16px rgba(20,60,60,.06)}
+.badge b{display:block;font-size:13px}.badge span{font-size:12px;color:var(--muted);line-height:1.5}
+.grid{display:grid;gap:18px}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g2{grid-template-columns:minmax(0,1.65fr) minmax(0,1fr)}
+.g2e{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;min-width:0}
+.card h3{margin:0 0 12px;font-size:16px;font-weight:700;display:flex;align-items:center;gap:10px}
+.card h3 svg{color:#0f5459}
+.card h3 .sp{margin-left:auto}
+.sub{font-size:12.5px;color:var(--muted);margin:-6px 0 12px;line-height:1.5}
+.kpi{border-radius:14px;padding:18px 20px;display:flex;align-items:center;gap:14px;border:1px solid}
+.kpi .ic{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;flex:none;color:#fff}
+.kpi .lab{font-weight:600;font-size:14px}
+.kpi .val{font-size:30px;font-weight:800;letter-spacing:-.5px;margin-top:2px}
+.kpi .sm{font-size:12px;color:var(--muted);margin-top:2px}
+.kpi .doc{margin-left:auto;width:56px;height:56px;border-radius:12px;display:grid;place-items:center;opacity:.9}
+.k-blue{background:var(--blue-t);border-color:#d3e4fa}.k-blue .ic{background:var(--blue)}.k-blue .doc{background:#d8e8fc;color:var(--blue)}
+.k-green{background:var(--green-t);border-color:#cfead9}.k-green .ic{background:#22a35e}.k-green .doc{background:#cdeedb;color:#22a35e}
+.k-amber{background:var(--amber-t);border-color:#f6e2b6}.k-amber .ic{background:var(--amber)}.k-amber .doc{background:#fde8bd;color:var(--amber)}
+.k-red{background:var(--red-t);border-color:#f6d0cf}.k-red .ic{background:var(--red)}.k-red .doc{background:#fad5d4;color:var(--red)}
+.banner{display:flex;align-items:center;gap:12px;background:#e3f4e9;border:1px solid #cbe8d5;color:#155e36;border-radius:12px;padding:14px 18px;font-weight:500;flex:1;min-width:0;flex-wrap:wrap}
+.banner .when{margin-left:auto;color:#3c5b4a;font-size:12.5px;display:flex;gap:6px;align-items:center}
+.banner.warn{background:#fff6e4;border-color:#f3dfb2;color:#7a5200}
+.banner.bad{background:#fdecea;border-color:#f3c6c0;color:#8a1f12}
+#nzSt input.reg-in{box-sizing:border-box}
+#nzSt td,#nzIt td{padding:4px 6px}
+.row{display:flex;gap:14px;align-items:stretch;flex-wrap:wrap}
+.btn{border:0;border-radius:10px;padding:12px 20px;font-weight:700;font-size:14px;display:inline-flex;align-items:center;gap:10px}
+.btn.pri{background:var(--green);color:#fff;box-shadow:0 4px 12px rgba(23,102,63,.25)}
+.btn.pri:hover{background:#12573a}
+.btn.ghost{background:#fff;border:1px solid var(--line);color:#24504d;padding:12px 14px}
+.btn:focus-visible,.step:focus-visible,.tab:focus-visible,.chip:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-weight:600;color:#33504e;background:#f5f8f8;padding:10px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--line2);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:#fafcfc}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+.dot{width:20px;height:20px;border-radius:50%;display:inline-grid;place-items:center;color:#fff;vertical-align:middle;margin-right:8px}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.p-g{background:#e2f4e8;color:#17663f}.p-a{background:#fff1d6;color:#8a5a00}.p-r{background:#fde4e3;color:#a8261f}.p-b{background:#e5effc;color:#1d5fb8}.p-v{background:#efe8fb;color:#5b34a6}.p-n{background:#edf1f1;color:#4a6361}
+.search{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:9px;padding:8px 12px;min-width:240px;color:var(--muted)}
+.search input{border:0;outline:0;font:inherit;flex:1;min-width:0;color:var(--ink)}
+.pager{display:flex;align-items:center;justify-content:space-between;margin-top:14px;color:var(--muted);font-size:12.5px}
+.pager .pg{display:flex;gap:6px}
+.pager button{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:#fff;font-weight:600}
+.pager button.on{background:#0f3f45;color:#fff;border-color:#0f3f45}
+.legend{display:grid;gap:14px;align-content:center}
+.legend div{display:flex;align-items:center;gap:10px;font-size:13.5px}
+.legend i{width:14px;height:14px;border-radius:50%;flex:none}
+.legend span{margin-left:auto;color:#33504e;font-weight:600}
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.tile{border-radius:12px;padding:14px;display:flex;gap:12px;align-items:center;background:#ecf7f0}
+.tile.b{background:#eaf4fb}
+.tile b{font-size:13px;display:block}.tile span{font-size:12px;color:var(--muted)}
+.tile svg{color:#1f8a54;flex:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:600;color:#2c4d4b}
+.chip.on{background:#0f4f54;color:#fff;border-color:#0f4f54}
+.chip.sm{padding:4px 10px;font-size:12px}
+.seg{display:inline-flex;background:#eef3f2;border-radius:10px;padding:3px;gap:2px}
+.seg button{border:0;background:none;padding:7px 14px;border-radius:8px;font-weight:600;font-size:12.5px;color:#3b5856}
+.seg button.on{background:#fff;color:#0f3f45;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.seg.pos button.on[data-v="I-POS"]{color:#17663f}.seg button.on[data-v="I-NEG"]{color:#a8261f}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:9px 16px;font-size:13px}
+.kv dt{color:var(--muted)}.kv dd{margin:0;font-weight:600}
+.plot{width:100%}
+.note{font-size:12px;color:var(--muted);line-height:1.5}
+.ai-card{background:linear-gradient(135deg,#f0f7ff,#f3fbf6);border:1px solid #d6e7f3;border-radius:14px;padding:16px 18px;display:flex;gap:14px}
+.ai-card .orb{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#2f7fe0,#1f8a54);display:grid;place-items:center;color:#fff;flex:none}
+.ai-card b{font-size:13.5px}.ai-card p{margin:4px 0 0;font-size:13px;line-height:1.55;color:#2c4644}
+.ai-card .tag{font-size:10.5px;font-weight:700;color:#2f7fe0;letter-spacing:.6px;text-transform:uppercase}
+.next{display:flex;justify-content:flex-end;margin-top:22px}
+.sitecard{border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start;cursor:pointer;background:#fff;text-align:left;width:100%}
+.sitecard:hover{border-color:#b9d3cf}
+.sitecard.on{border-color:#1f8a54;box-shadow:0 0 0 3px #e2f4e8}
+.sitecard .lt{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-weight:800;color:#fff;flex:none}
+.sitecard .t{font-weight:700;font-size:13.5px}.sitecard .d{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.45}
+.bar{height:8px;border-radius:5px;background:#edf2f1;overflow:hidden}.bar i{display:block;height:100%;border-radius:5px}
+.locked{display:grid;place-items:center;text-align:center;padding:70px 20px;color:var(--muted)}
+.locked h2{color:var(--ink);margin:12px 0 6px}
+/* AI drawer */
+.fab{position:fixed;right:max(24px,env(safe-area-inset-right,0px));bottom:max(22px,env(safe-area-inset-bottom,0px));z-index:30;border:0;border-radius:999px;padding:13px 20px 13px 14px;color:#fff;font-weight:700;display:flex;gap:10px;align-items:center;background:linear-gradient(135deg,#1d6fd0,#16804c);box-shadow:0 10px 26px rgba(16,80,90,.32)}
+.drawer{position:fixed;top:74px;right:0;bottom:0;width:410px;max-width:100%;background:#fff;border-left:1px solid var(--line);z-index:40;transform:translateX(105%);transition:transform .25s ease;display:flex;flex-direction:column;box-shadow:-12px 0 30px rgba(10,50,50,.10)}
+.drawer.on{transform:none}
+.dh{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center}
+.dh b{display:block}.dh span{font-size:12px;color:var(--muted)}
+.dbody{flex:1;overflow:auto;padding:16px 18px;display:flex;flex-direction:column;gap:12px;background:#f8fbfb}
+.msg{max-width:92%;padding:11px 13px;border-radius:12px;font-size:13px;line-height:1.55}
+.msg.u{align-self:flex-end;background:#0f4f54;color:#fff;border-bottom-right-radius:4px}
+.msg.a{align-self:flex-start;background:#fff;border:1px solid var(--line);border-bottom-left-radius:4px}
+.msg.a .acts{display:flex;gap:6px;margin-top:9px}
+.msg.a .acts button{font-size:11.5px;border:1px solid var(--line);background:#f7faf9;border-radius:7px;padding:4px 9px;font-weight:600;color:#24504d}
+.ctx{font-size:11.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ctx .pill{font-weight:600}
+.dfoot{padding:12px 14px;border-top:1px solid var(--line)}
+.dfoot .in{display:flex;gap:8px;border:1px solid var(--line);border-radius:12px;padding:6px 6px 6px 12px;align-items:center}
+.dfoot input{border:0;outline:0;flex:1;font:inherit;min-width:0}
+.dfoot .go{width:36px;height:36px;border-radius:9px;border:0;background:#0f4f54;color:#fff;display:grid;place-items:center}
+.sugs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sugs button{border:1px solid #d6e5f3;background:#f1f7fe;color:#1d5fb8;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:600}
+.spin{animation:sp 1s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+/* responsive */
+@media (max-width:1200px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g2,.g2e,.g3{grid-template-columns:minmax(0,1fr)}.tabs{margin-left:30px}}
+@media (max-width:860px){
+  body{overflow:auto}
+  .side{display:none}.tabs{display:none}.top .art{width:100%;opacity:.5}
+  main{left:0}.brand{min-width:0}.sitesel{min-width:0}
+  .g4{grid-template-columns:minmax(0,1fr)}.badge{display:none}.ph h1{font-size:24px}
+  .mobsteps{display:flex!important}
+}
+.mobsteps{display:none;gap:6px;overflow-x:auto;margin-bottom:16px;padding-bottom:4px}
+</style>
+
+<style>
+.sel{appearance:none;border:0;background:transparent;font:inherit;font-weight:600;color:var(--ink);outline:0;cursor:pointer;padding-right:4px;max-width:200px}
+.sitesel{padding:7px 12px}
+.sitesel label{font-size:10.5px;color:var(--muted);font-weight:700;letter-spacing:.6px;text-transform:uppercase;display:block;line-height:1}
+.loading{display:flex;align-items:center;gap:10px;color:var(--muted);padding:30px 6px;font-size:13px}
+.loading::before{content:"";width:16px;height:16px;border-radius:50%;border:2px solid #cfe0dd;border-top-color:#17663f;animation:sp 0.8s linear infinite}
+.err{background:var(--red-t);border:1px solid #f3cfcd;color:#8a1f19;border-radius:10px;padding:12px 14px;font-size:13px}
+.msg.a p{margin:0 0 8px}.msg.a p:last-of-type{margin-bottom:0}.msg.a ul{margin:4px 0 8px;padding-left:18px}
+.msg.a .meta{font-size:11px;color:var(--muted);margin-top:8px}
+.keyrow{display:flex;gap:8px;padding:10px 18px;border-bottom:1px solid var(--line);background:#fffaf0}
+.keyrow input{flex:1;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;min-width:0}
+.classic{width:100%;height:calc(100vh - 260px);min-height:560px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.subtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.stamp{background:#fbeaea;border:1px solid #f0cccc;color:#7a1414;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;letter-spacing:.2px;margin-bottom:16px}
+.ai-card .tag,.ai-card>div>b{display:block}.ai-card>div>b{margin-top:2px}
+
+[hidden]{display:none!important}
+.wz{display:none;margin-bottom:18px}.wz.on{display:block}
+.wz-steps{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.wz-steps button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;font-weight:600;font-size:12.5px;color:#3b5856;display:flex;gap:8px;align-items:center}
+.wz-steps button i{font-style:normal;width:20px;height:20px;border-radius:50%;background:#eef3f2;display:grid;place-items:center;font-size:11px}
+.wz-steps button.on{background:#0f4f54;color:#fff;border-color:#0f4f54}.wz-steps button.on i{background:#2a8f8a;color:#fff}
+.wz-steps button.ok i{background:#3fbf7f;color:#073b25}
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px}
+.form label{display:flex;flex-direction:column;gap:5px;font-size:12.5px;font-weight:600;color:#33504e;min-width:0}
+.form label.wide{grid-column:1/-1}.form label.chk{flex-direction:row;align-items:center;grid-column:1/-1;font-weight:600}
+.form input,.form select,.tw input,.tw select{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;font-weight:500;color:var(--ink);background:#fff;min-width:0}
+.tw input,.tw select{padding:5px 7px;font-size:12.5px;width:100%}
+.tw select{min-width:78px}
+.pathrow{display:flex;gap:8px;align-items:center}.pathrow input{flex:1;min-width:0;border:1px solid var(--line);border-radius:8px;padding:9px 10px;font:inherit}
+.pathrow .btn{padding:9px 14px;white-space:nowrap}
+.wz-nav{display:flex;justify-content:space-between;margin-top:18px}
+.warnbox{background:var(--amber-t);border:1px solid #f3dfb2;border-radius:10px;padding:10px 14px;font-size:12.5px;color:#6b4a00;margin-top:12px}
+.warnbox li{margin:2px 0}
+.okbox{background:var(--green-t);border:1px solid #cfead9;border-radius:10px;padding:10px 14px;font-size:12.5px;color:#155e36;margin-top:12px}
+.modal{position:fixed;inset:0;background:rgba(10,40,40,.35);z-index:60;display:grid;place-items:center}
+.modal-box{background:#fff;border-radius:14px;width:min(720px,94vw);max-height:84vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.fslist{overflow:auto;padding:4px 10px;flex:1;min-height:300px}
+.fslist button{display:flex;gap:8px;align-items:center;width:100%;border:0;background:none;text-align:left;padding:7px 8px;border-radius:7px;font-size:13px}
+.fslist button:hover{background:#f1f6f5}.fslist button.sel{background:#e2f4e8}
+.fslist .f{color:#4a6361}
+.mods{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.logbox{background:#0f2224;color:#cfe7e3;border-radius:10px;padding:12px 14px;font-family:var(--mono);font-size:11.5px;max-height:260px;overflow:auto;white-space:pre-wrap}
+code{font-family:var(--mono);font-size:.92em;background:#eef3f2;padding:1px 5px;border-radius:5px}
+.editrow{display:grid;grid-template-columns:auto minmax(150px,auto) 1fr auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fbfdfc}
+.editrow input,.editrow select{border:1px solid var(--line);border-radius:7px;padding:6px 8px;font:inherit;font-size:12.5px;min-width:0}
+
+
+.seg.big{margin-bottom:18px}.seg.big button{padding:9px 16px;font-size:13px}
+.ctl{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}.ctl label{font-size:12px;font-weight:700;color:#33504e}
+.ctl input[type=range]{width:100%}
+.savebar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;padding:12px;border-radius:10px;background:#fff8e8;border:1px solid #f3dfb2}
+.savebar input{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;flex:1;min-width:180px}
+tr.chg td{background:#fff8e8}
+.reg-in{width:84px!important}
+.presets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.preset{border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:left;background:#fff;cursor:pointer}
+.preset b{display:block;font-size:13.5px}.preset span{font-size:12px;color:var(--muted)}
+.preset.on{border-color:#17663f;box-shadow:0 0 0 3px #e2f4e8}
+.selbox{border:1px solid var(--line);border-radius:8px;padding:5px 8px;font:inherit;font-size:12.5px}
+.replist button{display:block;width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:8px;font-size:13px;font-weight:600;color:#2c4d4b}
+.replist button.on,.replist button:hover{background:#eef6f4}
+.mdview{max-height:720px;overflow:auto;line-height:1.6;font-size:13.5px}.mdview h1,.mdview h2{font-size:18px;margin:14px 0 6px}.mdview h3{font-size:15px;margin:12px 0 4px}
+.mdview table{margin:8px 0}.mdview td,.mdview th{border:1px solid var(--line2);padding:5px 8px}
+.figgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.fig{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff;cursor:zoom-in}.fig img{display:block;width:100%;height:150px;object-fit:contain;background:#fafcfc}
+.fig div{padding:6px 9px;font-size:11.5px;color:#33504e}
+.outcard h4{margin:0 0 4px;font-size:16px}.outcard .big{font-size:26px;font-weight:800;letter-spacing:-.4px}
+.outcard dl{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:12.5px;margin:10px 0}.outcard dt{color:var(--muted)}.outcard dd{margin:0;font-weight:600}
+.tw th{position:sticky;top:0;z-index:1}
+.aitest td{padding:5px 8px;font-size:12px}
+
+.auto .orb{background:linear-gradient(135deg,#0f6f73,#1f8a54)}
+</style>
+
+<header class="top">
+  <svg class="art" id="topArt" viewBox="0 0 900 74" preserveAspectRatio="xMaxYMax slice" aria-hidden="true"></svg>
+  <div class="brand">
+    <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><defs><linearGradient id="lg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3fbf7f"/><stop offset="1" stop-color="#0f6b5c"/></linearGradient><linearGradient id="lg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5fb4f0"/><stop offset="1" stop-color="#1d6fd0"/></linearGradient></defs>
+      <path d="M20 3c6 6 10 12 10 18a10 10 0 0 1-20 0c0-6 4-12 10-18z" fill="url(#lg2)"/>
+      <path d="M20 37c-1-8 1-15 8-20-2 7-4 13-8 20z" fill="url(#lg1)"/><path d="M20 37c1-7-1-13-7-17 1 6 3 12 7 17z" fill="#2aa36b"/></svg>
+    <div><b>NBL-AquaTwin</b><span>Nature Based Living</span></div>
+  </div>
+  <div class="tabs" id="tabs"></div>
+  <div class="topr">
+    <div class="sitesel"><span data-i="pin"></span><div><label for="siteSel">Site</label><select id="siteSel" class="sel"></select></div></div>
+    <div class="sitesel"><span data-i="play"></span><div><label for="runSel">Saved run</label><select id="runSel" class="sel"></select></div></div>
+    <button class="refbtn" id="refAll" onclick="refreshAll()" title="Reload the results of the selected saved run on this page (use after a calculation finishes)"><span data-i="refresh"></span><span id="refTxt">Refresh</span></button>
+    <button class="iconbtn" aria-label="AI key and settings" title="AI key" onclick="openAI(true)"><span data-i="gear"></span></button>
+    <div class="avatar" title="Hydrogeologist">AP</div>
+  </div>
+</header>
+
+<aside class="side">
+  <nav id="steps"></nav>
+  <div class="scene"><svg id="sideArt" viewBox="0 0 236 170" preserveAspectRatio="xMidYMax slice" aria-hidden="true"></svg></div>
+</aside>
+
+<main id="main">
+  <div class="mobsteps" id="mobsteps"></div>
+
+  <!-- ================= STEP 0 ================= -->
+  <section class="page" id="p0">
+    <div class="ph"><div class="shield"><span data-i="map"></span></div>
+      <div><div class="eyebrow">Step 0 · Site setup</div><h1 id="siteTitle">Site</h1>
+      <p>Everything the interpretation leans on: the lease boundary, the ADMT survey lines, nearby borewells, the transformer noise zone, terrain and DEM lineaments, plus the regional geology and groundwater setting.</p></div>
+      <div class="badge"><span data-i="leaf" style="color:#1f8a54"></span><div><b id="evStage">Evidence stage</b><span id="evStage2"></span></div></div>
+    </div>
+    <div class="grid g4" id="k0"></div>
+    <div class="grid g2" style="margin-top:18px">
+      <div class="card"><h3><span data-i="layers"></span>Site map<span class="sp chips" id="layerChips"></span></h3>
+        <div id="map0" class="plot" style="height:640px"><div class="loading">Loading the site layers…</div></div>
+        <div class="note" id="map0note"></div></div>
+      <div class="grid" style="align-content:start">
+        <div class="card"><h3><span data-i="pin"></span>Site card</h3><dl class="kv" id="siteCard"></dl></div>
+        <div class="card"><h3><span data-i="layers"></span>Weathering profile assumed (G1)</h3>
+          <div id="geo0"></div>
+          <div class="note" style="margin-top:8px">From the assumption register (geology G1). Alternatives G2 and G3 are carried in Step 5.</div></div>
+      </div>
+    </div>
+    <div class="grid g2e" style="margin-top:18px">
+      <div class="card"><h3><span data-i="drill"></span>Reference borewells</h3>
+        <p class="sub">Reported by owners and drillers. Used in Step 2 to cross-check the ADMT response at known water strikes.</p>
+        <div class="tw"><table id="bwT"></table></div></div>
+      <div class="ai-card auto"><div class="orb"><span data-i="spark"></span></div><div><span class="tag">Auto-check · from site data</span>
+        <b>What the setting means for drilling</b><p id="ins0"></p>
+        <div class="row" style="margin-top:10px;gap:8px"><button class="chip sm" onclick="askAI('Explain what this site setting means for choosing a borewell site and depth.')">Ask AquaTwin AI</button></div></div></div>
+    </div>
+    <div class="next"><button class="btn pri" onclick="go(1)">Continue to data integrity <span data-i="arrow"></span></button></div>
+  </section>
+
+  <!-- ================= STEP 1 ================= -->
+  <section class="page" id="p1">
+    <div class="ph"><div class="shield"><span data-i="shield"></span></div>
+      <div><div class="eyebrow">Step 1 · Data integrity</div><h1>Data Integrity</h1>
+      <p>Verify the integrity of your input data. Files are checked for consistency using SHA-256 fingerprints and compared with the intake manifest. This ensures that your data remains unchanged and trustworthy throughout the modelling process.</p></div>
+      <div class="badge"><span data-i="leaf" style="color:#1f8a54"></span><div><b>Trusted Data</b><span>Reliable Insights<br>Sustainable Decisions</span></div></div>
+    </div>
+    <div class="grid g4" id="k1"><div class="loading">Reading the intake manifest…</div></div>
+    <div class="row" style="margin-top:18px">
+      <div class="banner" id="intBanner"><span data-i="checkc"></span><span id="intMsg">Fingerprints not checked in this session yet.</span>
+        <span class="when"><span data-i="cal"></span>Last checked: <span id="lastChk">never</span></span></div>
+      <button class="iconbtn" style="width:50px;height:auto" aria-label="Check again" onclick="runCheck()"><span data-i="refresh" id="refIc"></span></button>
+      <button class="btn pri" id="chkBtn" onclick="runCheck()"><span data-i="play"></span>Check all fingerprints now</button>
+    </div>
+    <div class="grid g2" style="margin-top:18px">
+      <div class="card"><h3><span data-i="db"></span>How the files are used<span class="sp search"><span data-i="search"></span><input id="catQ" placeholder="Search categories..." aria-label="Search categories"></span></h3>
+        <div class="tw"><table><thead><tr><th>Category</th><th>Use</th><th>Files</th><th>Description</th></tr></thead><tbody id="catT"></tbody></table></div>
+        <div class="pager"><span id="pgInfo"></span><div class="pg" id="pg"></div></div></div>
+      <div class="grid" style="align-content:start">
+        <div class="card"><h3><span data-i="list"></span>File Usage Summary</h3>
+          <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;align-items:center"><div id="donut" style="height:220px"></div><div class="legend" id="donutLeg"></div></div></div>
+        <div class="card"><h3><span data-i="shield" style="color:#1f8a54"></span>Data Integrity Status</h3><div class="tiles" id="tiles1"></div></div>
+      </div>
+    </div>
+    <div class="grid g2" style="margin-top:18px">
+      <div class="card"><h3><span data-i="cal"></span>Survey coverage</h3>
+        <p class="sub" id="rainNote">Acquisition day and rain condition of each line.</p>
+        <div id="timeline" style="height:320px"></div></div>
+      <div class="card"><h3><span data-i="alert" style="color:#c27c00"></span>Still missing</h3>
+        <p class="sub">Gaps that limit what this survey can say. Each one is tracked in the data-needs register.</p>
+        <div class="tw"><table id="missT"></table></div></div>
+    </div>
+    <div class="next"><button class="btn pri" onclick="go(2)">Continue to quality control <span data-i="arrow"></span></button></div>
+  </section>
+
+  <!-- ================= STEP 2 ================= -->
+  <section class="page" id="p2">
+    <div class="ph"><div class="shield"><span data-i="flask"></span></div>
+      <div><div class="eyebrow">Step 2 · Quality control</div><h1>Quality control</h1>
+      <p>Every reading is screened for zero records, spikes, line ends, fixed noise rows and the transformer zone. Repeat lines, line crossings and nearby borewells then test how far the response can be trusted, depth by depth.</p></div>
+      <div class="badge"><span data-i="checkc" style="color:#c27c00"></span><div><b>Review the flags</b><span>Baseline from M0<br>of the selected run</span></div></div>
+    </div>
+    <div class="grid g4" id="k2"><div class="loading">Loading the M0 audit…</div></div>
+    <div class="grid g2" style="margin-top:18px">
+      <div class="card"><h3><span data-i="bars"></span>Readings kept, flagged and excluded by line</h3><div id="qcBars" style="height:420px"></div></div>
+      <div class="card"><h3><span data-i="alert" style="color:#c27c00"></span>Why readings were excluded</h3>
+        <div class="tw"><table id="reasonT"></table></div>
+        <div class="ai-card auto" style="margin-top:14px"><div class="orb"><span data-i="spark"></span></div><div><span class="tag">Auto-check · QC</span><p id="ins2"></p>
+          <div class="row" style="margin-top:10px;gap:8px"><button class="chip sm" onclick="askAI('Review the QC results. Which lines or depths should I distrust, and is any re-survey worth doing before drilling?')">Ask AquaTwin AI</button></div></div></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:18px"><h3><span data-i="wave"></span>Station inspector<span class="sp chips" id="qcLineChips"></span></h3>
+      <div class="row" style="align-items:center;margin-bottom:8px"><label for="qcSt" style="font-weight:600">Station</label>
+        <input type="range" id="qcSt" min="0" max="10" value="0" style="flex:1;max-width:520px"><span id="qcStLab" class="num" style="font-weight:700;min-width:90px"></span><span id="qcStInfo" class="note"></span></div>
+      <div class="grid g2e"><div id="qcCurve" style="height:380px"></div><div id="qcLev" style="height:380px"></div></div>
+      <div class="note">Left: measured log₁₀ dV (grey) and after despiking and channel correction (teal). Right: levelled response used for interpretation. Red crosses are readings excluded by QC.</div>
+    </div>
+    <div class="grid g2e" style="margin-top:18px">
+      <div class="card"><h3><span data-i="target"></span>Depth confidence</h3>
+        <p class="sub" id="dconfNote">Agreement between repeat lines and at line crossings, for every depth level.</p>
+        <div id="dconf" style="height:440px"></div></div>
+      <div class="grid" style="align-content:start">
+        <div class="card"><h3><span data-i="drill"></span>Borewell cross-check</h3>
+          <p class="sub">Does ADMT show a low (conductive) response at the depths where water was struck? z below −1 = clearly low.</p>
+          <div class="tw"><table id="bwcT"></table></div></div>
+        <div class="card"><h3><span data-i="repeat"></span>Repeat records</h3><div class="tw"><table id="repT"></table></div></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:18px"><h3><span data-i="scale"></span>What this ADMT survey can and cannot support</h3><div class="grid g3" id="canT"></div></div>
+    <div class="next"><button class="btn pri" onclick="go(3)">Continue to pseudo-sections <span data-i="arrow"></span></button></div>
+  </section>
+
+  <!-- ================= STEP 3 ================= -->
+  <section class="page" id="p3">
+    <div class="ph"><div class="shield"><span data-i="section"></span></div>
+      <div><div class="eyebrow">Step 3 · Pseudo-sections</div><h1>Pseudo-sections</h1>
+      <p>A pseudo-section draws one survey line as distance along the ground against nominal depth, coloured by the ADMT response. Blue is a lower response than the line's own background (a candidate fracture); brown is higher (massive rock). Depths are nominal because the frequency table was not exported.</p></div>
+      <div class="badge"><span data-i="layers" style="color:#2f7fe0"></span><div><b id="psBadge">Survey lines</b><span id="psBadge2"></span></div></div>
+    </div>
+    <div class="card">
+      <div class="row" style="align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="chips" id="psLines"></div>
+        <div class="row" style="gap:10px;align-items:center">
+          <div class="seg" id="psVar"><button data-v="sec" class="on">Section (3 panels)</button><button data-v="shape">Depth-shape anomaly</button><button data-v="lv">Levelled</button><button data-v="raw">Raw log₁₀ dV</button><button data-v="cls">Response class</button></div>
+          <label class="chip sm" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="psMask" checked> Hide excluded</label>
+          <label class="chip sm" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="psZones" checked> Zones</label>
+        </div>
+      </div>
+      <div class="grid" style="grid-template-columns:minmax(0,1fr) 300px;gap:16px">
+        <div id="ps" style="height:1000px"><div class="loading">Loading the line…</div></div>
+        <div class="grid" style="align-content:start;gap:12px"><div id="psMini" style="height:300px"></div><div id="psInfo" class="note"></div></div>
+      </div>
+    </div>
+    <div class="grid g2" style="margin-top:18px">
+      <div class="card"><h3><span data-i="grid"></span>Depth slice across all lines<span class="sp row" style="gap:10px;align-items:center;font-size:13px;font-weight:600"><input type="range" id="dsDepth" min="10" max="600" step="10" value="150" aria-label="Depth"><span id="dsLab" class="num" style="min-width:64px"></span></span></h3>
+        <div id="dslice" style="height:640px"></div></div>
+      <div class="grid" style="align-content:start">
+        <div class="ai-card auto"><div class="orb"><span data-i="spark"></span></div><div><span class="tag">Auto-check · section</span>
+          <b id="psAiT">Reading this section</b><p id="psAi"></p>
+          <div class="row" style="margin-top:10px;gap:8px"><button class="chip sm" onclick="askAI('Interpret pseudo-section '+psLine+': which features are credible, which are noise, and how do they compare with the crossing lines?',{line:psLine})">Ask AquaTwin AI</button></div></div></div>
+        <div class="card"><h3><span data-i="info"></span>How to read the colours</h3><div id="psLegend"></div></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:18px"><h3><span data-i="grid"></span>Depth slices side by side (report figure)<span class="sp row" style="gap:8px;align-items:center;font-size:13px;font-weight:600">Depths (m)<input id="sixDepths" value="10,20,30,40,50,60" style="border:1px solid var(--line);border-radius:8px;padding:6px 9px;font:inherit;width:190px" aria-label="Depths"><button class="btn pri" style="padding:8px 14px" onclick="drawSix()">Draw</button></span></h3>
+      <p class="note" id="sixMsg">Up to six depths, comma separated (e.g. 120,150,180,210,240,270 for the target window). Uses the view chosen above (depth-shape or levelled).</p>
+      <div id="sixPlot" style="height:40px"></div></div>
+    <div class="next"><button class="btn pri" onclick="go(4)">Continue to interpretation <span data-i="arrow"></span></button></div>
+  </section>
+
+  <!-- ================= STEP 4 ================= -->
+  <section class="page" id="p4">
+    <div class="ph"><div class="shield"><span data-i="target"></span></div>
+      <div><div class="eyebrow">Step 4 · Interpretation</div><h1>Interpretation and borewell sites</h1>
+      <p>Low-response zones are scored on width, depth window, crossing-line support, repeat support and noise flags, then grouped into candidate sites. Every class is read three ways, positive, neutral and negative, and none is adopted until a borehole confirms it.</p></div>
+      <div class="badge"><span data-i="alert" style="color:#c27c00"></span><div><b>All sites unvalidated</b><span id="interpBadge">Pre-drilling scenario</span></div></div>
+    </div>
+    <div class="stamp" id="stamp4"></div>
+    <div class="banner warn" id="approveRow" hidden style="margin-bottom:16px"><span data-i="alert"></span><span>The class readings of this run are a <b>proposal</b> (M4). Review the classes on Step 3, then approve the three readings as a set; none is adopted until a borehole decides.</span><button class="btn pri" style="margin-left:auto;padding:8px 14px" onclick="approveReadings()">Approve the readings</button><span class="note" id="approveMsg"></span></div>
+    <div class="note" id="zoneSrc" style="margin:-6px 0 12px"></div>
+    <div class="row" style="margin-bottom:18px;align-items:center">
+      <div class="seg" id="reading"><button data-v="I-POS">Positive reading</button><button data-v="I-NEU" class="on">Neutral reading</button><button data-v="I-NEG">Negative reading</button></div>
+      <div class="note" id="readingTxt" style="flex:1;min-width:240px"></div>
+    </div>
+    <div class="grid g2">
+      <div class="card"><h3><span data-i="map"></span>Candidate sites and zones</h3><div id="map4" style="height:600px"><div class="loading">Scoring the sites…</div></div></div>
+      <div class="card"><h3><span data-i="list"></span>Ranked sites</h3><div id="siteEdit" style="margin-bottom:12px"></div><div class="grid" style="gap:8px" id="siteList"></div></div>
+    </div>
+    <div class="grid g2" style="margin-top:18px">
+      <div class="card" id="siteDetail"></div>
+      <div class="card"><h3><span data-i="drill"></span>Drilling log forecast<span class="sp note" id="logSite"></span></h3><div id="logSvg"></div></div>
+    </div>
+    <div class="card" style="margin-top:18px"><h3><span data-i="list"></span>All scored zones<span class="sp note" id="zoneCount"></span></h3>
+      <div class="tw" style="max-height:420px;overflow:auto"><table id="zoneT"></table></div></div>
+    <div class="next"><button class="btn pri" onclick="go(5)">Continue to assumptions <span data-i="arrow"></span></button></div>
+  </section>
+
+
+  <!-- ================= NEW SITE WIZARD ================= -->
+  <section class="page" id="pnew">
+    <div class="ph"><div class="shield"><span data-i="pin"></span></div>
+      <div><div class="eyebrow">Set up a new site</div><h1>New site</h1>
+      <p>Six short steps take you from the field folder to a site the model can run on. The originals are only read, never changed: they are copied read-only with a fingerprint, exactly as for Siddanahalli. Your entries are kept as a draft until you create the site.</p></div>
+      <div class="badge"><span data-i="info" style="color:#2f7fe0"></span><div><b>About 15 minutes</b><span>Then 3–5 minutes<br>for the first run</span></div></div>
+    </div>
+    <div class="wz-steps" id="wzSteps"></div>
+
+    <div class="card wz" data-w="1"><h3><span data-i="pin"></span>1 · Name and describe the site</h3>
+      <p class="sub">The name becomes the folder name under <code>sites\</code>. Use letters, numbers and underscores (for example <code>Practice</code> or <code>Hosur_Plot2</code>).</p>
+      <div class="form">
+        <label>Site name *<input id="w_name" placeholder="Practice"></label>
+        <label>Short code (run IDs)<input id="w_code" placeholder="PRC" maxlength="6"></label>
+        <label class="wide">Location<input id="w_loc" placeholder="Village, Taluk, District, State"></label>
+        <label>Prepared by<input id="w_by" placeholder="Your name"></label>
+        <label>Geology<input id="w_geo" placeholder="e.g. Peninsular gneissic complex"></label>
+        <label class="wide">Groundwater setting (optional)<input id="w_gw" placeholder="e.g. CGWB: Aquifer II depth to water 10–198 m bgl; stage of development 179 %"></label>
+      </div>
+      <div class="wz-nav"><span></span><button class="btn pri" onclick="wzGo(2)">Next: instrument data <span data-i="arrow"></span></button></div>
+    </div>
+
+    <div class="card wz" data-w="2"><h3><span data-i="db"></span>2 · Point to the instrument folder</h3>
+      <p class="sub">The folder with the ADMT <code>.dat</code> exports as they came off the instrument. The Studio reads every record, counts stations and depth levels, and suggests what each file is. Check every suggestion.</p>
+      <div class="pathrow"><input id="w_folder" placeholder="D:\NewSite\ADMT Data"><button class="btn ghost" onclick="browse('w_folder','dir')">Browse…</button><button class="btn pri" onclick="wzScan()">Scan folder</button></div>
+      <div id="w_scanOut"></div>
+      <div class="wz-nav"><button class="btn ghost" onclick="wzGo(1)">Back</button><button class="btn pri" onclick="wzGo(3)">Next: lines and boundary <span data-i="arrow"></span></button></div>
+    </div>
+
+    <div class="card wz" data-w="3"><h3><span data-i="map"></span>3 · Line positions and lease boundary</h3>
+      <p class="sub">Each line needs its planned start and end point. Load them from the stake-out workbook (sheet <i>Setups</i>) or type them. Station 1 is placed at the end you started walking from; stations follow every spacing along the line.</p>
+      <div class="form">
+        <label class="wide">Stake-out workbook<div class="pathrow"><input id="w_stake" placeholder="…\Stake-out Table.xlsx"><button class="btn ghost" onclick="browse('w_stake','file')">Browse…</button><button class="btn pri" onclick="wzStake()">Load lines</button></div></label>
+        <label class="wide">Lease boundary (KML, KMZ, or XLSX with Latitude/Longitude)<div class="pathrow"><input id="w_bnd" placeholder="…\boundary.kmz"><button class="btn ghost" onclick="browse('w_bnd','file')">Browse…</button><button class="btn pri" onclick="wzBoundary()">Load boundary</button></div></label>
+        <label>Station spacing (m)<input id="w_spacing" type="number" step="0.5" value="2.5"></label>
+        <label>Rain date during the survey (if any)<input id="w_rain" type="date"></label>
+      </div>
+      <div class="grid" style="grid-template-columns:minmax(0,1.5fr) minmax(320px,1fr);gap:16px;margin-top:12px">
+        <div class="tw" style="max-height:470px;overflow:auto"><table id="w_lines"></table></div>
+        <div><div id="w_map" style="height:470px;border:1px solid var(--line);border-radius:10px"></div><p class="note">Green: boundary. Each line runs from ● station 1 to ▲ its last station.</p></div>
+      </div>
+      <div class="wz-nav"><button class="btn ghost" onclick="wzGo(2)">Back</button><button class="btn pri" onclick="wzGo(4)">Next: borewells and noise <span data-i="arrow"></span></button></div>
+    </div>
+
+    <div class="card wz" data-w="4"><h3><span data-i="drill"></span>4 · Reference borewells and noise sources</h3>
+      <p class="sub">Borewells near the site with a known depth and water strikes are the only ground truth before drilling. Link each borewell-check record to its well. A transformer or power line within ~120 m makes readings unreliable; its zone is excluded in QC.</p>
+      <div class="tw"><table id="w_bw"></table></div>
+      <div class="row" style="gap:8px;margin-top:8px"><button class="chip sm" onclick="wzAddBw()">+ Add borewell</button><span class="note">Strikes as depth ranges in m, e.g. <code>37-43, 195-213</code>.</span></div>
+      <div class="form" style="margin-top:16px">
+        <label class="chk"><input type="checkbox" id="w_tr_on" onchange="wzDrawMap()"> A transformer or power line is near the lines</label>
+        <label>Transformer latitude<input id="w_tr_lat" type="number" step="0.000001" oninput="wzDrawMap()"></label>
+        <label>Transformer longitude<input id="w_tr_lon" type="number" step="0.000001" oninput="wzDrawMap()"></label>
+        <label>Exclusion radius (m)<input id="w_tr_r" type="number" value="120" oninput="wzDrawMap()"></label>
+      </div>
+      <div class="wz-nav"><button class="btn ghost" onclick="wzGo(3)">Back</button><button class="btn pri" onclick="wzGo(5)">Next: review <span data-i="arrow"></span></button></div>
+    </div>
+
+    <div class="card wz" data-w="5"><h3><span data-i="checkc"></span>5 · Review and create</h3>
+      <div id="w_review"></div>
+      <div class="wz-nav"><button class="btn ghost" onclick="wzGo(4)">Back</button><button class="btn pri" id="w_create" onclick="wzCreate()"><span data-i="play"></span>Create the site</button></div>
+    </div>
+
+    <div class="card wz" data-w="6"><h3><span data-i="play"></span>6 · First run: data steps M0–M4</h3>
+      <p class="sub">M0 audit and QC · M1 assumption register · M2 response features · M3 response classes · M4 class readings. Takes 3–5 minutes. Modelling (M5–M8) waits until you have chosen candidate sites in Step 4.</p>
+      <div id="w_created"></div>
+      <div class="row" style="gap:10px;margin:12px 0"><button class="btn pri" id="w_runbtn" onclick="wzRun()"><span data-i="play"></span>Run M0–M4 now</button><button class="btn ghost" id="w_open" onclick="wzOpen()" hidden>Open the new site</button></div>
+      <div id="w_job"></div>
+    </div>
+  </section>
+
+  <!-- ================= STEP 5 · ASSUMPTIONS ================= -->
+  <section class="page" id="p5">
+    <div class="ph"><div class="shield"><span data-i="layers"></span></div>
+      <div><div class="eyebrow">Step 5 · Assumptions</div><h1>Assumptions</h1>
+      <p>Every number the model cannot measure yet has a low, central and high value; MODFLOW samples between low and high. The bars show which assumptions move the answer most (M8), so you know what to measure first. Editing saves a new version; old versions stay read-only and every change goes to the decision log.</p></div>
+      <div class="badge"><span data-i="doc" style="color:#2f7fe0"></span><div><b id="regBadge">Register</b><span id="regBadge2"></span></div></div>
+    </div>
+    <div class="grid g4" id="k5"><div class="loading">Reading the assumption register…</div></div>
+    <div class="grid g2" style="margin-top:18px">
+      <div class="card"><h3><span data-i="bars"></span>What moves the answer most<span class="sp note">M8 importance, mean of 3 targets</span></h3>
+        <div id="drivers" style="height:360px"></div></div>
+      <div class="card"><h3><span data-i="target"></span>Measure these first</h3><div id="measureList"></div></div>
+    </div>
+    <div class="card" style="margin-top:18px"><h3><span data-i="list"></span>Assumption register<span class="sp row" style="gap:8px;align-items:center"><span class="chips" id="regVers"></span><span class="search"><span data-i="search"></span><input id="regQ" placeholder="Search assumptions..." aria-label="Search assumptions"></span><button class="btn ghost" id="regEditBtn" style="padding:8px 12px" onclick="toggleRegEdit()">Edit values</button></span></h3>
+      <div class="tw" style="max-height:620px;overflow:auto"><table id="regT"></table></div>
+      <div id="regSave" hidden class="savebar"><b id="regChg"></b><input id="regReason" placeholder="Reason for the change (evidence, measurement, decision) *"><input id="regBy" placeholder="Approved by *" style="max-width:220px"><button class="btn pri" onclick="saveRegister()">Save new version</button><span class="note" id="regMsg"></span></div>
+    </div>
+    <div class="card" style="margin-top:18px"><h3><span data-i="layers"></span>Structural alternatives and rules</h3><div class="grid g3" id="regOther"></div></div>
+    <div class="next"><button class="btn ghost" onclick="openClassic(5)">Open the classic page</button><button class="btn pri" onclick="go(6)">Continue to run &amp; scenarios <span data-i="arrow"></span></button></div>
+  </section>
+
+  <!-- ================= STEP 6 · RUN & SCENARIOS ================= -->
+  <section class="page" id="p6">
+    <div class="ph"><div class="shield"><span data-i="chart"></span></div>
+      <div><div class="eyebrow">Step 6 · Modelling</div><h1>Run &amp; scenarios</h1>
+      <p>The 3D model shows where the ADMT response suggests permeable rock and how the water level moves under each scenario. Below it: start a run, the storage and connectivity estimates, the MODFLOW scenario ensemble, and the instant what-if explorer.</p></div>
+      <div class="badge"><span data-i="alert" style="color:#c27c00"></span><div><b>Scenario results</b><span>Assumption-driven<br>not calibrated</span></div></div>
+    </div>
+    <div class="seg big" id="t6"><button data-v="m3d" class="on">3D model</button><button data-v="run">Start a calculation</button><button data-v="sto">Storage &amp; connectivity</button><button data-v="scn">MODFLOW scenarios</button><button data-v="maps">Outcome maps</button><button data-v="cb">Cloudburst tiers</button><button data-v="rl">Recharge locations</button><button data-v="sp">Storm &amp; storage plan</button><button data-v="wi">What-if</button></div>
+
+    <div class="t6" data-t="m3d">
+      <div class="grid" style="grid-template-columns:minmax(0,1fr) 320px;gap:18px">
+        <div class="card" style="padding:12px"><div id="m3d" style="height:680px"><div class="loading">Building the 3D model…</div></div></div>
+        <div class="grid" style="align-content:start;gap:14px">
+          <div class="card"><h3><span data-i="layers"></span>Show</h3>
+            <div class="ctl"><label>ADMT reading</label><div class="seg" id="r3d"><button data-v="I-POS">Positive</button><button data-v="I-NEU" class="on">Neutral</button><button data-v="I-NEG">Negative</button></div></div>
+            <div class="ctl"><label>Panels</label><div class="seg" id="v3d"><button data-v="both" class="on">Both</button><button data-v="perm">Permeability</button><button data-v="sto">Storability</button></div></div>
+            <div class="ctl"><label>Colours</label><div class="seg" id="rel3d"><button data-v="0" class="on">Absolute (all depths)</button><button data-v="1">Compared within each depth</button></div></div>
+            <div class="ctl"><label>Colour permeable cells from probability</label><input type="range" id="iso3d" min="0.1" max="0.9" step="0.05" value="0.3"><span class="num" id="iso3dL">≥ 0.30</span></div>
+            <div class="ctl"><label>Block depth shown</label><input type="range" id="dm3d" min="100" max="600" step="50" value="400"><span class="num" id="dm3dL">400 m</span></div>
+            <div class="ctl"><label>Cut-away: remove east of</label><input type="range" id="cx3d" min="0" max="100" step="1" value="100"><span class="num" id="cx3dL">none</span></div>
+            <div class="ctl"><label>Cut-away: remove north of</label><input type="range" id="cy3d" min="0" max="100" step="1" value="100"><span class="num" id="cy3dL">none</span></div>
+            <div class="ctl"><label>MODFLOW scenario (central case H3)</label><div class="seg" id="s3d"></div></div>
+            <div class="ctl"><label>Time</label><input type="range" id="t3d" min="0" max="19" step="1" value="19"><span class="num" id="t3dL"></span></div>
+            <div class="ctl"><label>Vertical exaggeration</label><input type="range" id="vz3d" min="0.5" max="4" step="0.25" value="1"><span class="num" id="vz3dL"></span></div>
+            <div class="chips" id="lay3d" style="margin-top:8px"></div></div>
+          <div class="card"><h3><span data-i="info"></span>Reading the view</h3><div id="info3d" class="note" style="line-height:1.6"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="t6" data-t="run" hidden>
+      <div class="grid g2">
+        <div class="card"><h3><span data-i="play"></span>What to calculate</h3>
+          <div class="presets" id="presets"></div>
+          <div class="ctl" style="margin-top:14px"><label>Modules</label><div class="chips" id="modChips"></div></div>
+          <div class="form" style="margin-top:12px">
+            <label>Save the results in<select id="runMode"><option value="new">A new saved run (nothing overwritten)</option><option value="cont">The selected saved run (chosen modules are redone there)</option></select></label>
+            <label>Parallel MODFLOW simulations<input id="runWorkers" type="number" min="1" max="8" value="2"></label>
+            <label>Parameter sets (custom)<input id="runNlhs" type="number" min="5" max="400" placeholder="engine default"></label>
+          </div>
+          <div class="row" style="gap:10px;margin-top:14px"><button class="btn pri" id="runStart" onclick="startRun()"><span data-i="play"></span>Start</button><button class="btn ghost" id="runStop" onclick="stopRun()" hidden>Stop</button><span class="note" id="runNote"></span></div>
+        </div>
+        <div class="card"><h3><span data-i="wave"></span>Progress</h3><div id="runJob"><p class="note">No calculation started from this page yet.</p></div></div>
+      </div>
+    </div>
+
+    <div class="t6" data-t="sto" hidden>
+      <div class="grid g2">
+        <div class="card"><h3><span data-i="db"></span>Water held in the 120–250 m window</h3><p class="sub">Monte Carlo over the M5 realisations and the storage assumptions. This is water <b>in storage</b>, not a safe yield.</p><div id="stoDist" style="height:380px"></div></div>
+        <div class="card"><h3><span data-i="bars"></span>Storage P10 · P50 · P90 by reading</h3><div class="tw"><table id="stoT"></table></div></div>
+      </div>
+      <div class="grid g2" style="margin-top:18px">
+        <div class="card"><h3><span data-i="target"></span>Connectivity at the candidate sites</h3><p class="sub">Share of the 100 realisations with a permeable class in the target window at the well, and with a continuous pathway from the upper 100 m down to it.</p><div id="conPlot" style="height:420px"></div></div>
+        <div class="card"><h3><span data-i="flask"></span>Which measurement changes storage most</h3><div class="tw" style="max-height:440px;overflow:auto"><table id="prioT"></table></div></div>
+      </div>
+    </div>
+
+    <div class="t6" data-t="maps" hidden>
+      <div class="grid" style="grid-template-columns:minmax(0,1fr) 330px;gap:18px">
+        <div class="card" style="padding:12px"><div id="omap" style="height:700px"><div class="loading">Building the map…</div></div></div>
+        <div class="grid" style="align-content:start;gap:14px">
+          <div class="card"><h3><span data-i="layers"></span>Map layer</h3>
+            <div class="seg" id="oml" style="flex-wrap:wrap"><button data-v="perm" class="on">Permeable rock</button><button data-v="sto">Storability</button><button data-v="head">Water level</button><button data-v="dd">Drawdown</button></div>
+            <div class="ctl" id="omRdW"><label>ADMT reading</label><div class="seg" id="omr"><button data-v="I-POS">Positive</button><button data-v="I-NEU" class="on">Neutral</button><button data-v="I-NEG">Negative</button></div></div>
+            <div id="omDepW"><div class="ctl"><label>Depth from</label><input type="range" id="omd0" min="0" max="590" step="10" value="100"><span class="num" id="omd0L">100 m</span></div>
+              <div class="ctl"><label>Depth to</label><input type="range" id="omd1" min="10" max="600" step="10" value="250"><span class="num" id="omd1L">250 m</span></div></div>
+            <div id="omScW" hidden><div class="ctl"><label>MODFLOW scenario (central case H3)</label><div class="seg" id="oms"></div></div>
+              <div class="ctl"><label>Time</label><input type="range" id="omt" min="0" max="19" step="1" value="19"><span class="num" id="omtL">year 10.0</span></div></div>
+            <div class="chips" id="omLay" style="margin-top:8px"></div></div>
+          <div class="card"><h3><span data-i="info"></span>What the map shows</h3><div id="omNote" class="note" style="line-height:1.6"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="t6" data-t="cb" hidden>
+      <div class="card"><h3><span data-i="info"></span>What this tab does, why, and how to use it</h3>
+        <div class="grid g3" id="cbHelp"></div></div>
+      <div id="cbNoRun" class="banner warn" style="margin-top:18px" hidden></div>
+      <div id="cbRes" hidden>
+        <div class="row" style="gap:12px;align-items:center;margin-top:18px;flex-wrap:wrap"><span class="note" style="font-weight:700">ADMT reading</span><div class="seg" id="cbSt"></div><span class="note" style="font-weight:700;margin-left:10px">Model boundary</span><div class="seg" id="cbBd"></div><span id="cbSiteW" hidden><span class="note" style="font-weight:700;margin-left:10px">Recharge site</span> <div class="seg" id="cbSite" style="display:inline-flex"></div></span></div>
+        <div id="cbLayNote" class="banner warn" style="margin-top:12px" hidden></div>
+        <div id="cbBdNote" class="banner warn" style="margin-top:12px" hidden></div>
+        <div class="grid g2" style="margin-top:14px">
+          <div class="card"><h3><span data-i="bars"></span>Where the cloudburst water goes</h3><p class="sub">Median over the parameter sets, as a share of the roof runoff, one year after the cloudburst. The parts add to about 100 %.</p><div id="cbFate" style="height:380px"></div></div>
+          <div class="card"><h3><span data-i="wave"></span>Water still stored in the aquifer</h3><p class="sub">Share of the roof runoff still held in aquifer storage (whole model) after each time. Each line is one tier; shaded band is P10 to P90.</p><div id="cbKeep" style="height:380px"></div></div>
+        </div>
+        <div class="grid g2" style="margin-top:18px">
+          <div class="card"><h3><span data-i="target"></span>Water-level benefit at the pumping well</h3><p class="sub">Difference from the same run with no cloudburst water (same parameters). Positive = water level higher.</p><div id="cbHead" style="height:340px"></div></div>
+          <div class="card"><h3><span data-i="info"></span>Reading these results</h3><div class="note" style="line-height:1.65">
+            <p style="margin:0 0 8px"><b>Overflow</b> is water the tier could not take fast enough (intake limit = structures × rock permeability × contact area × gradient).</p>
+            <p style="margin:0 0 8px"><b>Held in dry rock</b> applies only to tiers above the water table: part of the water stays behind and the rest arrives late.</p>
+            <p style="margin:0 0 8px"><b>Boundary loss</b> is water that drifted out of the model area. A tier that loses a lot this way will not give the water back at the well.</p>
+            <p style="margin:0">Every number is a comparison with the same run without cloudburst water, so the effect of the water is separated from the effect of the other assumptions. Not calibrated; not a yield.</p></div></div>
+        </div>
+        <div class="card" style="margin-top:18px"><h3><span data-i="list"></span>Tier summary for this reading</h3><div class="tw"><table id="cbSumT"></table></div><p class="note" style="margin-top:8px" id="cbSumNote"></p></div>
+        <div class="card" style="margin-top:18px"><h3><span data-i="db"></span>Central case (all assumptions at their central values)</h3><div class="tw"><table id="cbCenT"></table></div></div>
+        <div class="card" style="margin-top:18px" id="cbFigs"></div>
+      </div>
+      <div class="card" style="margin-top:18px"><h3><span data-i="list"></span>Cloudburst assumptions<span class="sp row" style="gap:8px;align-items:center"><span class="chips" id="cbVers"></span><button class="btn ghost" id="cbEditBtn" style="padding:8px 12px" onclick="toggleCbEdit()">Edit values</button></span></h3>
+        <p class="sub" id="cbRegNote"></p>
+        <div class="tw"><table id="cbRegT"></table></div>
+        <div id="cbSave" hidden class="savebar"><b id="cbChg"></b><input id="cbReason" placeholder="Reason for the change (evidence, measurement, decision) *"><input id="cbBy" placeholder="Approved by *" style="max-width:220px"><button class="btn pri" onclick="saveCb()">Save new version</button><span class="note" id="cbMsg"></span></div>
+      </div>
+      <div class="next"><button class="btn ghost" onclick="cbRunNow()">Go to Start a calculation</button></div>
+    </div>
+
+    <div class="t6" data-t="sp" hidden>
+      <div class="card"><h3><span data-i="info"></span>What this tab does, why, and how to use it</h3><div class="grid" id="spHelp" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px"></div></div>
+      <div class="grid" style="grid-template-columns:minmax(0,370px) minmax(0,1fr);gap:18px;margin-top:18px;align-items:start">
+        <div class="grid" style="gap:14px" id="spCtl">
+          <div class="card"><h3><span data-i="list"></span>What do you want to see</h3>
+            <div class="ctl"><div class="seg" id="spMode"><button data-v="nz" class="on">Net zero plan</button><button data-v="dr">Risk calendar and drought</button><button data-v="cl">Closed loop and NEWater</button><button data-v="one">One storm (detail)</button><button data-v="season">A season of storms (detail)</button></div></div>
+            <p class="note" id="spModeT" style="margin:6px 0 0"></p></div>
+          <div class="card" id="spWD"><h3><span data-i="wave"></span>Recharge well design</h3>
+            <p class="note" style="margin:0 0 8px">Used by the net zero plan, one storm and season views. The contact area of each well is worked out from its shape and the depth band it is open to: shallow wells are shafts or pits in the 0–20 m saprolite; moderate and deep wells are borewells, cased above their tier and open over the whole tier.</p>
+            <div class="grid g3" style="gap:8px"><div class="ctl"><label>Shallow structure</label><select id="wdTyp" class="selbox"><option value="shaft">Recharge shaft</option><option value="pit">Recharge pit</option></select></div>
+              <div class="ctl"><label>Its diameter (m)</label><input type="number" id="wdSd" min="0.2" max="5" step="0.1"></div><div class="ctl"><label>Its depth (m, up to 20)</label><input type="number" id="wdSh" min="0.5" max="20" step="0.5"></div></div>
+            <div class="grid g3" style="gap:8px"><div class="ctl"><label>Borewell diameter (m)</label><input type="number" id="wdBd" min="0.1" max="0.5" step="0.005"></div>
+              <div class="ctl"><label>Borewell intake rule</label><select id="wdM" class="selbox"><option value="darcy">K × area × gradient</option><option value="injection">Injection well (Thiem)</option></select></div>
+              <div class="ctl" id="wdHc"><label>Head in the borewell (m)</label><input type="number" id="wdH" min="0.5" max="100" step="0.5"></div></div>
+            <div class="tw"><table id="wdTab"></table></div>
+            <p class="note" id="wdNote" style="margin:6px 0 0"></p></div>
+          <div id="spNZ" class="grid" style="gap:14px">
+            <div class="card"><h3><span data-i="wave"></span>1 · Land and rain on the lease</h3>
+              <div class="grid g2" style="gap:8px">
+                <div class="ctl"><label>Lease (m²)</label><input type="number" id="nzLease" disabled></div>
+                <div class="ctl"><label>Roof of all buildings (m²)</label><input type="number" id="nzRoof" min="1" step="10"></div>
+                <div class="ctl"><label>Tar road width (m)</label><input type="number" id="nzRw" min="1" step="0.1"></div>
+                <div class="ctl"><label>Tar road length (m) <span class="note" style="margin:0">assumed</span></label><input type="number" id="nzRl" min="1" step="10"></div>
+                <div class="ctl"><label>Open-ground curve number <span class="note" style="margin:0">assumed</span></label><input type="number" id="nzCn" min="30" max="100" step="1"></div>
+                <div class="ctl"><label>Roof runoff coefficient</label><input type="number" id="nzRc" min="0.1" max="1" step="0.01"></div>
+                <div class="ctl"><label>Tar road runoff coefficient</label><input type="number" id="nzPc" min="0.1" max="1" step="0.01"></div>
+              </div>
+              <p class="note" id="nzAreas" style="margin:8px 0 0"></p>
+              <div class="ctl"><label>Share of land runoff led to the reservoir</label><input type="range" id="nzCap" min="0.3" max="1" step="0.05" value="1"><span class="num" id="nzCapL"></span></div>
+              <div class="ctl"><label>Storms to check (24 h rain, mm)</label><div class="tw"><table id="nzSt"></table></div>
+                <div class="row" style="gap:8px;margin-top:8px"><button class="btn ghost" id="nzStAdd" style="padding:6px 12px">Add a storm</button></div></div>
+              <div class="grid g2" style="gap:8px">
+                <div class="ctl"><label>Storm length for volumes (h)</label><input type="number" id="nzDv" min="1" max="96" step="1"></div>
+                <div class="ctl"><label>Storm length for peak flow (h)</label><input type="number" id="nzDp" min="1" max="96" step="1"></div>
+              </div></div>
+            <div class="card"><h3><span data-i="layers"></span>2 · Reservoir</h3>
+              <div class="grid g2" style="gap:8px">
+                <div class="ctl"><label>Reservoir volume (m³)</label><input type="number" id="nzRv" min="1" step="100"></div>
+                <div class="ctl"><label>Reservoir depth (m)</label><input type="number" id="nzRd" min="0.5" step="0.5"></div>
+                <div class="ctl"><label>Water used from the reservoir after a storm (m³/d) <span class="note" style="margin:0">typed by hand; the daily demand of the Closed loop view is a separate input. 0 sends all stored water to the recharge wells</span></label><input type="number" id="nzUse" min="0" step="1"></div>
+              </div>
+              <p class="note" style="margin:8px 0 0">The reservoir holds what the land runoff and roofs deliver. There is no overflow basin: anything the reservoir cannot hold would leave the lease, so the reservoir is sized for the design storm. Change the size and press Calculate.</p></div>
+            <div class="card"><h3><span data-i="layers"></span>3 · Roof tanks: three chambers per flat building, and the amenity tank <span class="note" style="margin:0">design proposal</span></h3>
+              <div class="grid g2" style="gap:8px">
+                <div class="ctl"><label>Flat buildings (number)</label><input type="number" id="nzRnb" min="0" step="1"></div>
+                <div class="ctl"><label>Chamber A, pure water, usable per building (m³) <span class="note" style="margin:0">the reserve: filled first, used last</span></label><input type="number" id="nzRa" min="0" step="10"></div>
+                <div class="ctl"><label>Chamber B, swing, usable per building (m³) <span class="note" style="margin:0">rain in the monsoon, pure water in the dry season, empty in the storm season</span></label><input type="number" id="nzRb" min="0" step="10"></div>
+                <div class="ctl"><label>Flush chamber, usable per building (m³) <span class="note" style="margin:0">toilet-flushing water: concentrate first, then treated wastewater; no effect on the water balance</span></label><input type="number" id="nzRf" min="0" step="10"></div>
+                <div class="ctl"><label>Roof of the flat buildings (m²)</label><input type="number" id="nzRfA" min="0" step="10"></div>
+                <div class="ctl"><label>Amenity building: tank, usable (m³)</label><input type="number" id="nzRtA" min="0" step="50"></div>
+                <div class="ctl"><label>Amenity tank joined to the lease supply</label><select id="nzRtOn" class="selbox"><option value="1">Yes</option><option value="0">No: its roof water goes to the reservoir</option></select></div>
+                <div class="ctl"><label>Chamber B kept empty in the storm season (% of its volume)</label><input type="number" id="nzRtFree" min="0" max="100" step="5"></div>
+                <div class="ctl"><label>Storm season starts (month)</label><select id="nzRsf" class="selbox"><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select></div>
+                <div class="ctl"><label>Storm season ends (month)</label><select id="nzRst" class="selbox"><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select></div>
+                <div class="ctl"><label>Pure-water top-up of chambers A and B</label><select id="nzRup" class="selbox"><option value="1">On: treated wastewater with no use is made into pure water and stored</option><option value="0">Off</option></select></div>
+              </div>
+              <p class="note" id="nzRtN" style="margin:8px 0 0"></p>
+              <p class="note" style="margin:8px 0 0">The roof of the flat buildings fills chamber A first, then chamber B; what neither can hold overflows to the reservoir. Water is drawn from chamber B first, then the amenity tank, the reservoir and chamber A last, so A stays as the pure-water reserve and B is the chamber that is empty when a storm comes. In the storm season (default September to November) B is used first and not refilled with pure water, so the share kept empty is free space for a storm; the Net zero storm check takes that space as relief, but only for storms in the season. Outside the season B takes rain and, with top-up on, pure water made from treated wastewater that has no other use. The flush chamber (toilet-flushing water, about ten days of use) holds the reverse-osmosis concentrate first and treated wastewater after it; it does not change the water balance. Overhead tanks and the amenity building's own demand are not modelled.</p></div>
+            <div class="card"><h3><span data-i="wave"></span>4 · What empties the reservoir (recharge wells)</h3>
+              <div class="tw"><table id="nzIt"></table></div>
+              <p class="note" style="margin:8px 0 0">Total intake of each well set in m³/d, worked out with the recharge well design above. Base wells: register rock K. Recharge-zone sets: the rock K at each ADMT recharge-zone point and tier, read back from the saved cloudburst runs. Candidate zones, not confirmed until drilling and pumping tests. A value you type is kept (yellow) and no longer follows the design.</p></div>
+          </div>
+          <div id="spDR" class="grid" style="gap:14px" hidden>
+            <div class="card"><h3><span data-i="wave"></span>1 · People, greenery and fountain</h3>
+              <div class="grid g2" style="gap:8px">
+                <div class="ctl"><label>Flats</label><input type="number" id="drFlats" min="1" step="1"></div>
+                <div class="ctl"><label>Persons per flat <span class="note" style="margin:0">2 to 6</span></label><input type="number" id="drPers" min="1" max="12" step="0.5"></div>
+                <div class="ctl"><label>Litres per person per day</label><input type="number" id="drLpcd" min="20" step="5"></div>
+                <div class="ctl"><label>of which flushing (L/person/d)</label><input type="number" id="drFl" min="0" step="5"></div>
+                <div class="ctl"><label>Treated water that comes back (% of use) <span class="note" style="margin:0">assumed</span></label><input type="number" id="drRec" min="0" max="100" step="1"></div>
+                <div class="ctl"><label>Planted area (m²) <span class="note" style="margin:0">assumed</span></label><input type="number" id="drPl" min="0" step="500"></div>
+                <div class="ctl"><label>Crop factor <span class="note" style="margin:0">assumed</span></label><input type="number" id="drKc" min="0" max="1.5" step="0.05"></div>
+                <div class="ctl"><label>Fountain water surface (m²) <span class="note" style="margin:0">assumed</span></label><input type="number" id="drFm" min="0" step="10"></div>
+                <div class="ctl"><label>Fountain make-up (mm/d)</label><input type="number" id="drFd" min="0" step="1"></div>
+              </div>
+              <p class="note" style="margin:8px 0 0">Flushing, irrigation and the fountain are supplied first from treated wastewater, then from the reservoir. Drinking, bathing, cooking and washing are supplied from roof tanks and the reservoir; what is left is the outside supply.</p></div>
+            <div class="card"><h3><span data-i="layers"></span>2 · Storage and the level rule</h3>
+              <p class="note" id="drTankN" style="margin:0 0 8px"></p>
+              <div class="ctl"><label>Wells that draw the reservoir down</label><select id="drWell" class="selbox"></select></div>
+              <div class="ctl"><label>Level rule through the year</label><select id="drPol" class="selbox"><option value="strict">Strict: space for the largest day on record in each month</option><option value="moderate">Moderate: space for a 1-in-10-year month</option><option value="none">No rule: keep the reservoir as full as possible</option></select></div>
+              <p class="note" id="drPolT" style="margin:6px 0 0"></p>
+              <p class="note" id="drResN" style="margin:6px 0 0"></p></div>
+            <div class="card"><h3><span data-i="list"></span>3 · Reference evaporation (mm/d) <span class="note" style="margin:0">assumed</span></h3>
+              <div class="grid" id="drEt" style="grid-template-columns:repeat(4,minmax(0,1fr));gap:6px"></div>
+              <p class="note" style="margin:8px 0 0">Used with the crop factor to find how much the planted area needs. Replace with local values when you have them.</p></div>
+          </div>
+          <div id="spCL" class="grid" style="gap:14px" hidden>
+            <div class="card"><h3><span data-i="repeat"></span>4 · Closed loop: treated wastewater to NEWater-grade water</h3>
+              <p class="note" style="margin:0 0 8px">Wastewater goes through a membrane bioreactor (biological treatment with ultrafiltration), then reverse osmosis and UV. People, flats, roof tank, reservoir and level rule are set in cards 1 and 2 above.</p>
+              <div class="grid g2" style="gap:8px">
+                <div class="ctl"><label>Drinking and cooking water (L/person/d) <span class="note" style="margin:0">assumed</span></label><input type="number" id="clDc" min="0" step="1"></div>
+                <div class="ctl"><label>Reverse osmosis recovery (%) <span class="note" style="margin:0">assumed</span></label><input type="number" id="clRo" min="30" max="95" step="1"></div>
+                <div class="ctl"><label>Treated-water tank before the membranes (m³)</label><input type="number" id="clTt" min="0" step="500"></div>
+                <div class="ctl"><label>Number of borewells <span class="note" style="margin:0">assumed: 3 or more</span></label><input type="number" id="clNb" min="0" max="20" step="1"></div>
+                <div class="ctl"><label>Yield of one borewell (m³/h) <span class="note" style="margin:0">temporary: about 1 L/s = 3.6 m³/h</span></label><input type="number" id="clBy" min="0" step="0.1"></div>
+                <div class="ctl"><label>Pumping hours per day <span class="note" style="margin:0">placeholder</span></label><input type="number" id="clBh" min="0" max="24" step="1"></div>
+                <div class="ctl"><label>Borewell capacity (m³/d) <span class="note" style="margin:0">number × yield × hours</span></label><input type="number" id="clBw" disabled></div>
+                <div class="ctl"><label>Water quality standard</label><select id="clHq" class="selbox"><option value="0">Two grades: pure water for the flats; concentrate and treated wastewater for flushing and irrigation</option><option value="1">One grade: all water high quality, every use including flushing and irrigation</option></select></div>
+                <div class="ctl"><label>Borewell water through reverse osmosis</label><select id="clBr" class="selbox"><option value="1">Yes (deep water may have fluoride and nitrate)</option><option value="0">No (only if the water test is clean)</option></select></div>
+                <div class="ctl"><label>Pure water for drinking and cooking</label><select id="clPd" class="selbox"><option value="1">Yes: pure water for all uses</option><option value="0">No: bathing, washing and flushing only</option></select></div>
+                <div class="ctl"><label>Concentrate use</label><select id="clCc" class="selbox"><option value="1">Used in toilet flushing first (and in irrigation up to the share below)</option><option value="0">Not used (pond or other outlet)</option></select></div>
+                <div class="ctl"><label>Irrigation water that may be concentrate (%) <span class="note" style="margin:0">0 = fresh-water plants and trees get none; the fountain never gets any</span></label><input type="number" id="clCi" min="0" max="100" step="5"></div>
+                <div class="ctl"><label>Rain on open ground that recharges the aquifer (%) <span class="note" style="margin:0">placeholder</span></label><input type="number" id="clRf" min="0" max="50" step="1"></div>
+                <div class="ctl"><label>Net evaporation of a concentrate pond (mm a year) <span class="note" style="margin:0">placeholder</span></label><input type="number" id="clNe" min="100" step="50"></div>
+              </div>
+              <p class="note" style="margin:8px 0 0">Borewell pumping capacity and the recharge share are placeholders until the first test pumping (RZ-13) and a recharge estimate. The treated share of domestic use is set in the card 1 field "Treated water that comes back".</p></div>
+          </div>
+          <div id="spOld" class="grid" style="gap:14px">
+          <div class="card"><h3><span data-i="wave"></span>1 · Water arriving</h3>
+            <div class="ctl" id="spSrcC"><div class="seg" id="spSrc"><button data-v="storm" class="on">Storm rain on the lease</button><button data-v="volume">A volume I type</button></div></div>
+            <div id="spStorm">
+              <div class="ctl"><label>Rain class (IMD, 24 h) or site level</label><div class="chips" id="spCls"></div></div>
+              <div class="ctl"><label>Rain depth (mm)</label><input type="number" id="spRain" min="1" max="1500" step="1" value="100"></div>
+              <div class="ctl"><label>Storm lasts (h)</label><select id="spDur" class="selbox"><option>1</option><option>3</option><option selected>6</option><option>12</option><option>24</option><option>48</option><option>72</option></select></div>
+              <div class="ctl"><label>Ground wetness before the storm</label><div class="seg" id="spAmc"><button data-v="I">Dry</button><button data-v="II" class="on">Average</button><button data-v="III">Wet</button></div></div>
+            </div>
+            <div id="spSeason" hidden>
+              <p class="note" style="margin:0 0 8px;line-height:1.55">Several storms one after another. The buffer and the wells carry over from one storm to the next, so you see whether a later storm finds the buffer already full and the tiers already filled. The four storms below are <b>only an example</b>: replace them with the IMD record of a wet spell or the forecast.</p>
+              <div class="chips" id="ssPre" style="margin-bottom:8px"></div>
+              <div class="tw"><table id="ssTab"></table></div>
+              <div class="row" style="gap:8px;margin-top:8px"><button class="btn ghost" id="ssAdd" style="padding:6px 12px">Add a storm</button></div>
+              <div class="ctl"><label>Ground wetness before the first storm</label><div class="seg" id="spAmcS"><button data-v="I">Dry</button><button data-v="II" class="on">Average</button><button data-v="III">Wet</button></div>
+                <p class="note" style="margin:6px 0 0">Later storms take their wetness from the rain of the previous 5 days (set it in the table if you know better).</p></div>
+              <div class="ctl"><label>Keep following the buffer after the last storm</label><select id="ssAfter" class="selbox"><option value="14">14 days</option><option value="30" selected>30 days</option><option value="60">60 days</option><option value="90">90 days</option></select></div>
+            </div>
+            <div class="ctl" id="spCapC"><label>Share of land runoff that can be led to the buffer / wells</label><input type="range" id="spCap" min="0.1" max="1" step="0.05" value="0.6"><span class="num" id="spCapL"></span></div>
+            <div id="spVol" hidden>
+              <div class="ctl"><label>Water delivered (m³)</label><input type="number" id="spVm" min="1" step="10" value="1000"></div>
+              <div class="ctl"><label>Delivered over (h)</label><input type="number" id="spVd" min="1" max="96" step="1" value="24"></div>
+              <p class="note" style="margin:6px 0 0">For a stream, spring, overflow or any other fresh source that you can measure. Rain and runoff are skipped.</p>
+            </div></div>
+          <div class="card"><h3><span data-i="layers"></span>2 · Buffer before the wells</h3>
+            <p class="note" style="margin:0 0 8px">A pond, tank or large well that holds water until the wells can take it. It is optional and only an example of a buffer.</p>
+            <div class="seg" id="spBuf"><button data-v="none">None</button><button data-v="ample" class="on">Big enough to hold all</button><button data-v="finite">A size I set</button></div>
+            <div id="spBufF" hidden><div class="ctl"><label>Buffer volume (m³)</label><input type="number" id="spBv" min="1" step="50" value="2000"></div>
+              <div class="ctl"><label>Already full at the start (%)</label><input type="range" id="spBs" min="0" max="100" step="5" value="0"><span class="num" id="spBsL">0 %</span></div></div></div>
+          <div class="card"><h3><span data-i="wave"></span>3 · Recharge wells by tier</h3>
+            <div class="grid g3" style="gap:8px"><div class="ctl"><label>Shallow</label><input type="number" id="spNs" min="0" max="8" value="2"></div><div class="ctl"><label>Moderate</label><input type="number" id="spNm" min="0" max="8" value="2"></div><div class="ctl"><label>Deep</label><input type="number" id="spNd" min="0" max="8" value="1"></div></div>
+            <div class="ctl"><label>Which depth do the moderate and deep wells stand for?</label><div class="row" style="gap:8px"><select id="spMc" class="selbox"><option value="CB2">Moderate = 20–60 m (CB2)</option><option value="CB3">Moderate = 60–175 m (CB3)</option></select><select id="spDc" class="selbox"><option value="CB3">Deep = 60–175 m (CB3)</option><option value="CB4">Deep = 175–250 m (CB4, experimental)</option></select></div></div>
+            <div class="tw"><table id="spWells"></table></div>
+            <p class="note" style="margin:6px 0 0">Intake of each well = rock permeability × contact area × gradient (or the injection-well rule for borewells); the contact area comes from the recharge well design card. Type a measured value to replace it.</p>
+            <div class="ctl"><label>How the wells are opened</label><select id="spPol" class="selbox"></select><p class="note" id="spPolT" style="margin:6px 0 0"></p></div>
+            <div id="spCust" hidden class="grid g3" style="gap:8px"><div class="ctl"><label>Shallow opens at (% full)</label><input type="number" id="spOs" min="0" max="100" value="0"></div><div class="ctl"><label>Moderate at</label><input type="number" id="spOm" min="0" max="100" value="40"></div><div class="ctl"><label>Deep at</label><input type="number" id="spOd" min="0" max="100" value="70"></div></div>
+            <div class="ctl"><label><input type="checkbox" id="spDon"> Also use water from the buffer (m³/d) once the storm has passed</label><input type="number" id="spDem" min="0" step="1" value="43"></div></div>
+          </div>
+          <div class="card"><div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn pri" id="spGo">Calculate</button><button class="btn ghost" id="spXl">Download as Excel</button></div><p class="note" id="spMsg" style="margin:8px 0 0"></p></div>
+        </div>
+        <div id="spRes" style="min-width:0"><div class="loading">Calculating…</div></div>
+      </div>
+      <div class="card" style="margin-top:18px"><h3><span data-i="list"></span>Storm and storage assumptions<span class="sp row" style="gap:8px;align-items:center"><span class="chips" id="spVers"></span><button class="btn ghost" id="spEditBtn" style="padding:8px 14px">Edit values</button></span></h3>
+        <p class="sub" id="spRegNote"></p>
+        <div class="tw"><table id="spRegT"></table></div>
+        <div id="spSave" hidden class="savebar"><b id="spChg"></b><input id="spReason" placeholder="Reason for the change (evidence, measurement, decision) *"><input id="spBy" placeholder="Approved by *" style="max-width:220px"><button class="btn pri" id="spSaveBtn">Save as a new version</button><span class="note" id="spSMsg"></span></div>
+      </div>
+    </div>
+
+    <div class="t6" data-t="scn" hidden>
+      <div class="row" style="gap:10px;margin-bottom:14px;align-items:center"><div class="seg" id="scnB"><button data-v="all" class="on">Both boundaries</button><button data-v="B1_GHB">Open boundary</button><button data-v="B2_closed">Closed boundary</button></div>
+        <label class="chip sm" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="scnPl"> Only runs plausible vs CGWB</label><span class="note" id="scnN"></span></div>
+      <div class="card"><h3><span data-i="bars"></span>Drawdown at the well after 10 years</h3><p class="sub">Each box is the spread over the parameter sets; colours are the structural readings. Lower is better. The compartment sensitivity case (much larger drawdown) is hidden; click it in the legend to show it.</p><div id="scnBox" style="height:460px"></div></div>
+      <div class="grid g2" style="margin-top:18px">
+        <div class="card"><h3><span data-i="wave"></span>Water level at the well, P10–P90<span class="sp row" style="gap:6px"><select id="hsStruct" class="selbox"></select><select id="hsScen" class="selbox"></select></span></h3><div id="hsPlot" style="height:380px"></div></div>
+        <div class="card"><h3><span data-i="list"></span>Scenario summary</h3><div class="tw" style="max-height:400px;overflow:auto"><table id="scnT"></table></div><h4 style="margin:16px 0 6px;font-size:14px">Where recharge water goes (particle tracking)</h4><div class="tw"><table id="partT"></table></div></div>
+      </div>
+    </div>
+
+    <div class="t6" data-t="rl" hidden>
+      <div class="card"><h3><span data-i="info"></span>What this tab does, why, and how to use it</h3>
+        <div class="grid g3">
+          <div><b>What</b><p class="note" style="margin:6px 0 0;line-height:1.6">It compares the candidate sites (A, B, C ...) as places to put the cloudburst recharge structures. For every site it brings together three separate layers: <b>storability</b> of the rock in each depth tier (specific yield, the share of rock volume that can fill with water), <b>connectivity</b> of the passive-ADMT candidate zones (M6), and the <b>cloudburst water simulation</b> (MODFLOW 6): how much of one storm day of roof water reaches the water table, is held in dry rock, and is still stored after 1 and 10 years.</p></div>
+          <div><b>Why</b><p class="note" style="margin:6px 0 0;line-height:1.6">High storability alone does not make a good recharge spot: the water must reach it, stay in it, and not drain out of the model. The layers are shown side by side and never merged into one score. For every comparison the tab also shows <b>in what share of the parameter sets each site keeps the most water</b>, so a small difference is not read as a real one.</p></div>
+          <div><b>How</b><p class="note" style="margin:6px 0 0;line-height:1.6">1) Tick the sites and press <i>Start the cloudburst simulations at these sites</i> (a quick screening takes minutes; a calculation with uncertainty takes longer). 2) Choose the ADMT reading, the model boundary, the tier and what to compare. 3) Read the chart, the table and the map, and the plain-language reading. Recharge points are candidate zones for connected fractured rock inferred from passive geophysical prospecting (ADMT), not confirmed until drilling and pumping tests.</p></div>
+        </div></div>
+      <div class="card" style="margin-top:18px"><h3><span data-i="pin"></span>Recharge zone (RZ) points, found from storability</h3>
+        <p class="note" style="margin:0 0 8px;line-height:1.6">Drilling and recharge are two different questions. The sites A, B, C ... are candidate <b>borewell</b> locations (priority and reserve). The <b>RZ points</b> are candidate <b>recharge</b> locations: for each of the four tiers and for each ADMT reading that has a permeable class (positive and neutral; the negative reading has none), the storability of the rock is mapped over the surveyed ground inside the lease, away from the boundary and the transformer noise zone, and the best points are taken. Each point is tagged with the nearest interpreted ADMT zone and whether that zone reaches the tier depth. The readings are never combined: the column <i>Found in</i> lists every tier and reading that picked the point. RZ points are candidate zones for connected fractured rock, inferred from passive geophysical prospecting (ADMT), not confirmed until drilling and pumping tests.</p>
+        <div class="row" style="gap:14px;flex-wrap:wrap;align-items:center"><span class="note" style="font-weight:700">Points per tier and reading</span><select id="rzK" style="border:1px solid var(--line);border-radius:8px;padding:6px 8px"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option></select>
+          <span class="note" style="font-weight:700">Minimum spacing</span><select id="rzSep" style="border:1px solid var(--line);border-radius:8px;padding:6px 8px"><option value="20">20 m</option><option value="30">30 m</option><option value="40" selected>40 m</option><option value="60">60 m</option><option value="80">80 m</option></select>
+          <button class="btn pri" id="rzGo">Find RZ points from this run</button><span class="note" id="rzMsg"></span></div>
+        <div class="tw" style="margin-top:10px"><table id="rzTab"></table></div>
+        <p class="note" style="margin:8px 0 0">Needs a run that contains M0 to M5. Finding the points again keeps the earlier list as a numbered copy (rz_candidates_v1.csv, ...), and the new points replace the old ones in the list below and in the run box.</p></div>
+      <div class="card" style="margin-top:18px"><h3><span data-i="play"></span>Start the cloudburst simulations at these sites</h3>
+        <p class="note" style="margin:0 0 4px">All candidate points inside the model area are ticked, the borewell sites (including those marked "not for drilling") and the RZ points: they are all run, so that every point becomes test data for the assumptions and scenarios. Untick any you want to skip.</p>
+        <div id="rlSites" class="chips" style="margin:6px 0 10px"></div>
+        <div class="row" style="gap:18px;flex-wrap:wrap;align-items:center">
+          <label class="chk" title="One assumed planar fracture zone through each recharge point. Strike, dip and width are in the cloudburst assumption table (suggested, not yours yet)."><input type="checkbox" id="rlCorr"> Also test a fracture corridor (adds a fifth rock structure)</label>
+          <label class="chk"><input type="radio" name="rlMode" value="0" checked> Quick screening: central assumptions only, open and closed boundary</label>
+          <label class="chk"><input type="radio" name="rlMode" value="n"> With uncertainty:</label>
+          <select id="rlN" class="sel" style="border:1px solid var(--line);border-radius:8px;padding:6px 8px"><option value="3">3 parameter sets</option><option value="5" selected>5 parameter sets</option><option value="10">10 parameter sets</option><option value="20">20 parameter sets</option></select>
+        </div>
+        <p class="note" id="rlEst" style="margin:10px 0 0;line-height:1.6"></p>
+        <div class="row" style="gap:10px;margin-top:10px;align-items:center"><button class="btn pri" id="rlGo">Start the cloudburst simulations at these sites</button><button class="btn ghost" id="rlStop" hidden>Stop</button><span class="note" id="rlMsg"></span></div>
+        <div id="rlJob" style="margin-top:10px"></div>
+        <p class="note" style="margin:8px 0 0">The results are saved inside the selected saved run (it must contain M0 to M5). Each calculation replaces the results shown for that saved run (the earlier ones are copied aside first, never overwritten), so tick every site you want to compare in the same job. Needs the suggested or your own cloudburst assumptions (tab <i>Cloudburst tiers</i>).</p></div>
+      <div id="rlNo" class="banner warn" style="margin-top:18px" hidden></div>
+      <div id="rlRes" hidden>
+        <div class="row" style="gap:10px 26px;align-items:center;margin-top:18px;flex-wrap:wrap"><span class="row" style="gap:8px;align-items:center"><span class="note" style="font-weight:700">ADMT reading</span><div class="seg" id="rlSt"></div></span><span class="row" style="gap:8px;align-items:center"><span class="note" style="font-weight:700">Model boundary</span><div class="seg" id="rlBd"></div></span><span class="row" style="gap:8px;align-items:center"><span class="note" style="font-weight:700">Tier</span><div class="seg" id="rlTier"></div></span><span class="row" style="gap:8px;align-items:center"><span class="note" style="font-weight:700">Compare</span><div class="seg" id="rlMet" style="flex-wrap:wrap"></div></span></div>
+        <div id="rlRead" class="card" style="margin-top:14px;border-left:4px solid #17663f"></div>
+        <div class="grid" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin-top:14px">
+          <div class="card"><h3><span data-i="bars"></span><span id="rlChT">Sites compared</span></h3><p class="sub" id="rlChS"></p><div id="rlChart" style="height:360px"></div></div>
+          <div class="card" style="padding:12px"><h3><span data-i="map"></span>Sites on the map</h3><div id="rlMap" style="height:360px"></div></div>
+        </div>
+        <div class="card" style="margin-top:18px"><h3><span data-i="list"></span>Site by site: the three layers side by side</h3><div class="tw"><table id="rlTab"></table></div><p class="note" id="rlTabN" style="margin:8px 0 0;line-height:1.6"></p></div>
+        <div class="card" style="margin-top:18px"><h3><span data-i="grid"></span>Which tier suits each site</h3><p class="sub" id="rlMatS"></p><div class="tw"><table id="rlMat"></table></div></div>
+        <div class="card" style="margin-top:18px" id="rlFigC" hidden><h3><span data-i="chart"></span>Figure saved with the run</h3><img id="rlFig" alt="Sites compared" style="width:100%;max-width:900px;border-radius:10px;border:1px solid var(--line)"></div>
+      </div>
+    </div>
+
+    <div class="t6" data-t="wi" hidden>
+      <div class="grid" style="grid-template-columns:360px minmax(0,1fr);gap:18px">
+        <div class="card"><h3><span data-i="scale"></span>Assumptions<span class="sp"><button class="chip sm" onclick="wiReset()">Reset</button></span></h3>
+          <div class="ctl"><label>Lateral boundary</label><div class="seg" id="wiB"><button data-v="B1_GHB" class="on">Open</button><button data-v="B2_closed">Closed</button></div></div>
+          <div class="ctl"><label>Model base</label><div class="seg" id="wiBase"><button data-v="600" class="on">600 m</button><button data-v="400">400 m</button></div></div>
+          <div id="wiSliders"></div>
+          <details style="margin-top:10px"><summary class="note" style="cursor:pointer;font-weight:700">All other assumptions</summary><div id="wiMore"></div></details></div>
+        <div class="grid" style="align-content:start;gap:18px">
+          <div class="banner warn" id="wiWarn" hidden><span data-i="alert"></span><span>Some settings are outside the range the surrogate was trained on. Treat those answers as unreliable.</span></div>
+          <div class="card"><h3><span data-i="bars"></span>Drawdown at the well after 10 years</h3><div id="wiDD" style="height:400px"></div><p class="note">From the M8 surrogate, a fast stand-in trained on this run's MODFLOW ensemble. Whiskers: P10–P90 prediction interval. It imitates MODFLOW under the same assumptions; it does not represent measured conditions.</p></div>
+          <div class="card"><h3><span data-i="wave"></span>Where the added water goes</h3><div id="wiRet" style="height:320px"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="next"><button class="btn ghost" onclick="openClassic(6)">Open the classic pages</button><button class="btn pri" onclick="go(7)">Continue to reports &amp; decisions <span data-i="arrow"></span></button></div>
+  </section>
+
+  <!-- ================= STEP 7 · REPORTS & DECISIONS ================= -->
+  <section class="page" id="p7">
+    <div class="ph"><div class="shield"><span data-i="doc"></span></div>
+      <div><div class="eyebrow">Step 7 · Reports &amp; decisions</div><h1>Reports &amp; decisions</h1>
+      <p>What each reading means and what to do, the pre-drilling predictions locked for the first borehole to test, every decision made so far, and the run's reports and figures.</p></div>
+      <div class="badge"><span data-i="lock" style="color:#17663f"></span><div><b id="predBadge">Locked predictions</b><span id="predBadge2"></span></div></div>
+    </div>
+    <div class="stamp" id="stamp7"></div>
+    <div class="seg big" id="t7"><button data-v="out" class="on">Outcomes</button><button data-v="pred">Locked predictions</button><button data-v="dec">Decision log</button><button data-v="rep">Reports &amp; figures</button><button data-v="prep">Prepare report (Word &amp; PDF)</button><button data-v="conf">Confidence</button></div>
+    <div class="t7" data-t="out"><div class="grid g3" id="outCards"></div>
+      <div class="card" style="margin-top:18px"><h3><span data-i="list"></span>Outcome matrix (reading × boundary)</h3><div class="tw"><table id="outT"></table></div></div>
+      <div class="row" style="margin-top:14px;gap:8px"><button class="chip" onclick="askAI('Write a one-page plain-language summary of this run for the Managing Director: what we know, what we do not know, the three readings, and the actions that hold in every reading.')">Ask AI: summary for the MD</button></div></div>
+    <div class="t7" data-t="pred" hidden><div class="card"><h3><span data-i="lock"></span>Predictions locked before drilling<span class="sp" id="predPill"></span></h3><p class="sub" id="predSub"></p><div class="tw"><table id="predT"></table></div></div></div>
+    <div class="t7" data-t="dec" hidden><div class="card"><h3><span data-i="list"></span>Decision log<span class="sp row" style="gap:8px"><div class="seg" id="decF"><button data-v="all" class="on">All</button><button data-v="for review">For review</button><button data-v="adopted">Adopted</button></div><span class="search"><span data-i="search"></span><input id="decQ" placeholder="Search decisions..." aria-label="Search decisions"></span></span></h3><div class="tw" style="max-height:640px;overflow:auto"><table id="decT"></table></div></div></div>
+    <div class="t7" data-t="rep" hidden><div class="grid" style="grid-template-columns:260px minmax(0,1fr);gap:18px">
+      <div class="card"><h3><span data-i="doc"></span>Reports</h3><div id="repList" class="replist"></div></div>
+      <div class="card"><div id="repView" class="mdview"><p class="note">Choose a report.</p></div></div></div>
+      <div class="card" style="margin-top:18px"><h3><span data-i="grid"></span>Figures<span class="sp note" id="figN"></span></h3><div class="figgrid" id="figGrid"></div></div></div>
+    <div class="t7" data-t="prep" hidden><div class="grid" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px">
+      <div class="card"><h3><span data-i="doc"></span>Prepare a report for this run</h3>
+        <p class="sub">One document per run, written twice (Word and PDF) from the same content. It holds the assumptions the run used, every scenario with its tables and figures, storage and connectivity, the decision matrix, the cloudburst tiers, outcome maps on your basemap and the reproducibility record. It only reads the run; nothing in the run changes.</p>
+        <div class="note" style="margin:8px 0 4px"><b>What goes in</b></div><div id="prSecs" style="display:grid;gap:6px"></div>
+        <div class="row" style="gap:18px;margin-top:12px;flex-wrap:wrap"><label class="chk"><input type="checkbox" id="prDocx" checked> Word (.docx)</label><label class="chk"><input type="checkbox" id="prPdf" checked> PDF</label></div>
+        <div class="row" style="gap:10px;margin-top:12px;flex-wrap:wrap"><label class="note" for="prBy">Prepared by</label><input id="prBy" placeholder="e.g. Dr. A. Antony Alosanai Promilton, Hydrogeologist" style="border:1px solid var(--line);border-radius:8px;padding:7px 10px;min-width:220px"></div>
+        <div class="row" style="gap:18px;margin-top:12px;flex-wrap:wrap"><label class="chk"><input type="radio" name="prScope" value="one" checked> This saved run only (<span id="prRunName"></span>)</label><label class="chk"><input type="radio" name="prScope" value="all"> Every saved run of this site (<span id="prRunN"></span>)</label></div>
+        <div class="row" style="gap:10px;margin-top:16px"><button class="btn pri" id="prGo">Prepare report</button><span class="note" id="prMsg"></span></div>
+        <p class="note" style="margin-top:10px">Takes about 15 to 40 seconds per saved run, mostly to draw the maps at 600 dpi. If Studio says a Python package is missing, run the pip command it shows once and start Studio again.</p></div>
+      <div class="card"><h3><span data-i="list"></span>Reports already prepared for this run</h3><div id="prList" class="note">Loading…</div></div></div></div>
+    <div class="t7" data-t="conf" hidden><div class="grid g2" id="confCards"></div></div>
+    <div class="next"><button class="btn ghost" onclick="openClassic(7)">Open the classic pages</button></div>
+  </section>
+
+  <!-- ================= STEPS 5-7 (classic pages inside the new layout) ================= -->
+  <section class="page" id="pclassic">
+    <div class="ph"><div class="shield" id="p5ic"><span data-i="layers"></span></div>
+      <div><div class="eyebrow" id="p5eye"></div><h1 id="p5t"></h1><p id="p5d"></p></div>
+      <div class="badge"><span data-i="info" style="color:#2f7fe0"></span><div><b>Classic view</b><span>Being redesigned<br>in phase 2</span></div></div>
+    </div>
+    <div class="subtabs" id="p5tabs"></div>
+    <div id="p5frame"><div class="loading">Starting the classic pages…</div></div>
+    <p class="note" style="margin-top:8px">These pages run the existing dashboard code and show the newest run. All their functions (run the model, edit assumptions, MODFLOW scenarios, what-if, figures) work as before.</p>
+  </section>
+</main>
+
+<button class="fab" onclick="openAI()"><span data-i="spark"></span>AquaTwin AI</button>
+<aside class="drawer" id="drawer" aria-label="AI assistant">
+  <div class="dh"><div class="ai-card" style="padding:0;border:0;background:none"><div class="orb"><span data-i="spark"></span></div></div>
+    <div style="min-width:0"><b>AquaTwin AI</b><span id="aiModel">checking…</span></div>
+    <button class="chip sm" style="margin-left:auto" onclick="aiTest()" title="Ask every model one word">Test connection</button><button class="iconbtn" onclick="toggleKey()" aria-label="API key" title="API key"><span data-i="gear"></span></button>
+    <button class="iconbtn" onclick="closeAI()" aria-label="Close"><span data-i="x"></span></button></div>
+  <div class="keyrow" id="modelRow" style="background:#f4f9f8;align-items:center"><label for="modelSel" class="note" style="white-space:nowrap">Model</label><select id="modelSel" class="sel" style="flex:1;border:1px solid var(--line);border-radius:8px;padding:6px 8px;max-width:none"></select></div>
+  <div class="keyrow" id="keyRow" hidden><input id="keyIn" type="password" placeholder="Paste NVIDIA API key (nvapi-…)" aria-label="API key"><button class="btn pri" style="padding:8px 14px" onclick="saveKey()">Save</button></div>
+  <div class="dbody" id="chat"></div>
+  <div class="dfoot"><div class="sugs" id="sugs"></div>
+    <div class="in"><input id="aiIn" placeholder="Ask about this step..." aria-label="Message"><button class="go" id="aiGo" onclick="sendAI()" aria-label="Send"><span data-i="send"></span></button></div>
+    <div class="note" style="margin-top:8px">The current step's tables go to the model with your question. It suggests; you accept or reject. Accepted suggestions are added to the decision log.</div></div>
+</aside>
+
+
+<div class="modal" id="lightbox" hidden onclick="this.hidden=true"><img id="lbImg" alt="" style="max-width:94vw;max-height:90vh;background:#fff;border-radius:8px"></div>
+<div class="modal" id="fsModal" hidden><div class="modal-box">
+  <div class="dh" style="padding:12px 16px"><b id="fsTitle">Choose</b><button class="iconbtn" style="margin-left:auto" onclick="$('fsModal').hidden=true" aria-label="Close"><span data-i="x"></span></button></div>
+  <div class="pathrow" style="padding:10px 16px"><input id="fsPath"><button class="btn ghost" onclick="fsLoad($('fsPath').value)">Go</button><button class="btn ghost" onclick="fsLoad(fsParent)">Up</button></div>
+  <div id="fsList" class="fslist"></div>
+  <div class="row" style="justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--line)"><span class="note" id="fsHint" style="margin-right:auto"></span><button class="btn pri" id="fsUse" onclick="fsChoose()">Use this folder</button></div>
+</div></div>
+<script src="assets/plotly.min.js"></script>
+<div id="aqToast" hidden></div>
+<script src="assets/studio.js?v=1.15.1"></script>
+<script src="assets/wizard.js?v=1.5.1"></script>
+<script src="assets/pages.js?v=1.17.8"></script>
+<script src="assets/sections.js?v=1.5.1"></script>
+
+
+</body>
+</html>
