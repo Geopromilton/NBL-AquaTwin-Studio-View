@@ -1,10 +1,5 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<link rel="icon" href="assets/icon.png">
-<title>NBL-AquaTwin Studio (view-only)</title>
+
+<title>NBL-AquaTwin Studio</title>
 <script src="assets/replay.js"></script>
 <style>
 @font-face{font-family:"Plus Jakarta Sans";font-weight:400;src:url(assets/fonts/plus-jakarta-sans-latin-400-normal.woff2) format("woff2")}
@@ -762,14 +757,16 @@ tr.chg td{background:#fff8e8}
                 <div class="ctl"><label>Yield of one borewell (m³/h) <span class="note" style="margin:0">temporary: about 1 L/s = 3.6 m³/h</span></label><input type="number" id="clBy" min="0" step="0.1"></div>
                 <div class="ctl"><label>Pumping hours per day <span class="note" style="margin:0">placeholder</span></label><input type="number" id="clBh" min="0" max="24" step="1"></div>
                 <div class="ctl"><label>Borewell capacity (m³/d) <span class="note" style="margin:0">number × yield × hours</span></label><input type="number" id="clBw" disabled></div>
-                <div class="ctl"><label>Water quality standard</label><select id="clHq" class="selbox"><option value="0">Two grades: pure water for the flats; concentrate and treated wastewater for flushing and irrigation</option><option value="1">One grade: all water high quality, every use including flushing and irrigation</option></select></div>
+                <div class="ctl"><label>Water quality standard</label><div class="note" style="margin:2px 0 0"><b>One grade only: pure (filtered) water for every use.</b> The concentrate and the sludge are not used on the lease; they leave by tanker.</div></div>
                 <div class="ctl"><label>Borewell water through reverse osmosis</label><select id="clBr" class="selbox"><option value="1">Yes (deep water may have fluoride and nitrate)</option><option value="0">No (only if the water test is clean)</option></select></div>
                 <div class="ctl"><label>Pure water for drinking and cooking</label><select id="clPd" class="selbox"><option value="1">Yes: pure water for all uses</option><option value="0">No: bathing, washing and flushing only</option></select></div>
-                <div class="ctl"><label>Concentrate use</label><select id="clCc" class="selbox"><option value="1">Used in toilet flushing first (and in irrigation up to the share below)</option><option value="0">Not used (pond or other outlet)</option></select></div>
-                <div class="ctl"><label>Irrigation water that may be concentrate (%) <span class="note" style="margin:0">0 = fresh-water plants and trees get none; the fountain never gets any</span></label><input type="number" id="clCi" min="0" max="100" step="5"></div>
+                <div class="ctl"><label>Tanker size (m³) <span class="note" style="margin:0">information, may change: small 4 to 6, medium 8 to 10, large 12 to 20</span></label><input type="number" id="clTk" min="0.5" max="40" step="0.5"></div>
+                <div class="ctl"><label>Holding tank: days of waste it must keep <span class="note" style="margin:0">if a tanker does not come</span></label><input type="number" id="clHd" min="0" max="14" step="0.5"></div>
+                <div class="ctl"><label>Cost of one tanker trip (rupees) <span class="note" style="margin:0">placeholder: 5 to 6 kL ₹1,500 to 2,500; 8 to 10 kL ₹2,500 to 4,000; 12 kL and more ₹4,500 to 8,000+</span></label><input type="number" id="clTc" min="0" step="100"></div>
+                <div class="ctl"><label>Sludge from the wastewater plant (litres per person per day) <span class="note" style="margin:0">placeholder</span></label><input type="number" id="clSl" min="0" step="0.1"></div>
                 <div class="ctl"><label>Rain on open ground that recharges the aquifer (%) <span class="note" style="margin:0">placeholder</span></label><input type="number" id="clRf" min="0" max="50" step="1"></div>
-                <div class="ctl"><label>Net evaporation of a concentrate pond (mm a year) <span class="note" style="margin:0">placeholder</span></label><input type="number" id="clNe" min="100" step="50"></div>
               </div>
+              <div class="ctl" style="margin-top:10px"><label>Build-up: share of the project occupied and planted in each year <span class="note" style="margin:0">default 20 % more each year, full in year 5; the roofs, roads, reservoir and roof tanks are kept at full build (safe side for storms)</span></label><div class="tw"><table id="clPhE"></table></div></div>
               <p class="note" style="margin:8px 0 0">Borewell pumping capacity and the recharge share are placeholders until the first test pumping (RZ-13) and a recharge estimate. The treated share of domestic use is set in the card 1 field "Treated water that comes back".</p></div>
           </div>
           <div id="spOld" class="grid" style="gap:14px">
@@ -810,7 +807,7 @@ tr.chg td{background:#fff8e8}
             <div id="spCust" hidden class="grid g3" style="gap:8px"><div class="ctl"><label>Shallow opens at (% full)</label><input type="number" id="spOs" min="0" max="100" value="0"></div><div class="ctl"><label>Moderate at</label><input type="number" id="spOm" min="0" max="100" value="40"></div><div class="ctl"><label>Deep at</label><input type="number" id="spOd" min="0" max="100" value="70"></div></div>
             <div class="ctl"><label><input type="checkbox" id="spDon"> Also use water from the buffer (m³/d) once the storm has passed</label><input type="number" id="spDem" min="0" step="1" value="43"></div></div>
           </div>
-          <div class="card"><div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn pri" id="spGo">Calculate</button><button class="btn ghost" id="spXl">Download as Excel</button></div><p class="note" id="spMsg" style="margin:8px 0 0"></p></div>
+          <div class="card"><div class="row" style="gap:8px;flex-wrap:wrap;align-items:center"><label class="note" style="margin:0">Build-up year</label><select id="spPh" class="selbox" title="Share of the project occupied. Applies to the storm, net zero and drought views; the closed loop shows every year."><option value="1">Full occupancy</option></select><button class="btn pri" id="spGo">Calculate</button><button class="btn ghost" id="spXl">Download as Excel</button></div><p class="note" id="spMsg" style="margin:8px 0 0"></p></div>
         </div>
         <div id="spRes" style="min-width:0"><div class="loading">Calculating…</div></div>
       </div>
@@ -959,9 +956,6 @@ tr.chg td{background:#fff8e8}
 <div id="aqToast" hidden></div>
 <script src="assets/studio.js?v=1.15.1"></script>
 <script src="assets/wizard.js?v=1.5.1"></script>
-<script src="assets/pages.js?v=1.17.8"></script>
+<script src="assets/pages.js?v=1.18.0"></script>
 <script src="assets/sections.js?v=1.5.1"></script>
 
-
-</body>
-</html>

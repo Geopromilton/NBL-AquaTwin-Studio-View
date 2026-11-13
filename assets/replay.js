@@ -1,5 +1,5 @@
 /* NBL-AquaTwin Studio, view-only copy.
-   Every call the studio makes to its local server (/api/...) is answered from a recording of the real v1.17.8 studio
+   Every call the studio makes to its local server (/api/...) is answered from a recording of the real v1.18.0 studio
    (run SID-20261019-104700, default inputs). Nothing is calculated here. */
 (function () {
   'use strict';
@@ -37,7 +37,7 @@
 
   function lookup(method, u, body) {
     var k = method + ' ' + u.pathname + u.search;
-    if (method === 'POST') k += '#' + md5(body || '');
+    if (method === 'POST') k += '#' + md5((body || '').replace('"phase":1,', ''));   /* v1.18.0: full occupancy is the recorded case */
     if (REC[k]) return REC[k];
     var k2 = k.replace(/([?&])v=\d+(&|$)/, function (m, a, b) { return b ? a : ''; }).replace(/[?&]$/, '');
     if (REC[k2]) return REC[k2];
